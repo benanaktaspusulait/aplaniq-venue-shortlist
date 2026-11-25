@@ -19,3 +19,5 @@ These choices were adopted by the candidate for the exercise. Joa did not confir
 ## Review
 
 The candidate revised the access and transport rules to distinguish shortlist eligibility from booking readiness and directed Codex to implement, a deviation from the PDF's Claude Code requirement. R1 preserved independent catering and minimum spend evidence. R2 fixed silent JSON overwrites and lost room qualifiers. Three venues pass at 80 and only Fabriek 1912 passes at 120. R3 caught a mandatory fee omission. The corrected native CLI is verified. See the [assessment log](docs/assessment-log.md).
+
+The assessment was stopped at approximately 22:22 GMT, about 3 hours 22 minutes after the reported start. Logged task intervals account for 1 hour 56 minutes 30 seconds before TASK-008. The full active total could not be reconstructed. Given further time, I would run the clean-checkout major gate and Docker smoke test, review any end-to-end coverage gaps, and complete the final review and handoff. See the [validation status](docs/tasks/TASK-008-validation.md#validation-matrix).

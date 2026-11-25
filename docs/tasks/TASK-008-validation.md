@@ -2,7 +2,7 @@
 
 ## Status
 
-To do.
+Stopped at the assessment time limit. The clean-checkout and fresh end-to-end gates remain unverified.
 
 ## Objective
 
@@ -63,3 +63,30 @@ A strict policy can validly produce an empty real-data result. Use a controlled 
 ## Suggested Git commit messages
 
 `test: verify the shortlist pipeline and original dataset`
+
+## Time reconciliation
+
+The reported project start was approximately 19:00 GMT on 25 November 2026. The TASK-008 check at 22:22 GMT was approximately 3 hours 22 minutes later. The first recorded environment check at 19:22:12 and first commit at 19:23:13 are later evidence points. They do not establish the start of human planning. The previous 1 hour 56 minutes 30 seconds total sums observed task intervals. Some intervals include waiting and others exclude final documentation or earlier work. Gaps between commits do not establish breaks, and there is no reliable record of breaks or of all work outside the measured intervals. The actual active total is undetermined. The three-hour limit was treated as reached. Codex stopped development and recorded this handoff.
+
+## Validation matrix
+
+Historical results describe the earlier tasks. TASK-008 did not rerun them or change the application, tests or CI.
+
+| Check | TASK-008 status | Evidence | Remaining limitation |
+| --- | --- | --- | --- |
+| Assessment time compliance | BLOCKED | Approximate start and observed intervals reconciled above. | Remaining work time cannot be established. |
+| Original assessment requirements | NOT VERIFIED | Existing native command and traceability for AC-01–15 are recorded in the [standards audit](../engineering/standards-audit.md#requirements-to-tests-traceability). | Final acceptance and submission review remain. |
+| Tracked inputs and original dataset | PASS | Git tree contains the pinned toolchain, lockfile, source, tests and documented command. File and committed bytes both matched the extracted source. SHA-256 `7a943c847d7e18dd4ee00ff4b93a4335b04749e9b3c1af18db20c037fc4e3a52`. | Static check only. |
+| Repository hygiene | NOT VERIFIED | Tracked path inventory contains no build cache, IDE configuration or binary build output. | No fresh secret scan or full content audit. The pre-existing staged .gitignore was preserved. |
+| Clean checkout build and execution | NOT VERIFIED | Existing CLI commit `f3f49bd`. | Rebuild from a clean checkout and run the documented command. |
+| Native CLI, dataset accounting, business results, determinism | NOT VERIFIED | Earlier CLI run accounted for all 30 records. At 80: 3 eligible, 19 conditional, 8 rejected, ordered v019, v028, v021. At 120: 1 eligible, 16 conditional, 13 rejected. Prior debug and release outputs matched. [Captured report](../cli-output.txt). | No fresh end-to-end run, independent recalculation or permutation check in TASK-008. |
+| Unit, integration and regression tests | NOT VERIFIED | TASK-007 recorded 29 unit and 32 integration passes in each profile and zero failed, ignored or doc tests. R2 and R3 corrections are recorded. | No fresh tests or regression additions. Audit remaining acceptance-criterion gaps. |
+| Debug, release, MSRV, rustfmt, Clippy and Rustdoc | NOT VERIFIED | The major gate previously passed on Rust 1.100.0 and MSRV 1.85.0 in TASK-007. | Rerun the canonical major gate from the clean checkout. |
+| Dependency security | NOT VERIFIED | No new dependency changes in packaging. | No fresh dependency advisory or licence scan. |
+| Container build, runtime controls, native equivalence and ARM64 | NOT VERIFIED | TASK-007B previously verified Linux arm64 hardened execution and byte-identical native/container streams in commits `29d6366` and `069c97b`. | The image and build cache were removed at the user's separate request. Rebuild and rerun the smoke test to revalidate. |
+| AMD64 | NOT VERIFIED | Both pinned base manifests offer amd64. | Application image build and runtime were not tested on amd64. |
+| Container vulnerability exposure | NOT VERIFIED | Retained TASK-007B Trivy report inspected. No critical or secret findings. Two high records remain in Debian 13 distroless `libssl3t64` `3.5.9-1~deb13u1`, CVE-2026-107494 and CVE-2026-124709. No fixed version was listed. The binary did not link OpenSSL. | This does not establish absence of runtime exposure. Rebuild and rescan against a refreshed pinned base when fixes are available. |
+| CI workflow | PASS | Existing `.github/workflows/quality.yml` at `29defc5` uses read-only contents, an immutable checkout reference and the canonical major gate. | Static inspection only. No workflow changes or fresh upstream verification. |
+| Remote CI execution | NOT VERIFIED | No hosted run was observed. | Validate during an authorised hosted run. |
+
+The next technical work is clean-checkout reproduction, fresh native and Docker validation, and a targeted check of the test coverage gaps. TASK-009 / R4 was not started. TASK-008 is incomplete.
