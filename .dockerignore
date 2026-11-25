@@ -1,0 +1,9 @@
+# Allow only what the release build reads.
+**
+!Dockerfile
+!.dockerignore
+!Cargo.toml
+!Cargo.lock
+!rust-toolchain.toml
+!src/
+!src/**/*.rs
