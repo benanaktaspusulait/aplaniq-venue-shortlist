@@ -10,13 +10,13 @@ Phase 2 added the implementation backlog. The candidate-approved planning assump
 
 ## Development
 
-Use Git and a stable Rust toolchain with Cargo, rustfmt and Clippy. The scaffold declares Rust 1.85 as its minimum for [edition 2024](https://doc.rust-lang.org/edition-guide/rust-2024/). Phase 1 was checked on stable Rust 1.100.0.
+Use Git and stable Rust with Cargo, rustfmt and Clippy. The package uses Edition 2024 and supports Rust 1.85.0 or later. See the [engineering standards](docs/engineering-standards.md) for the MSRV check, release gates and review policy.
 
 ```sh
 cargo fmt --all -- --check
-cargo clippy --all-targets -- -D warnings
-cargo test
-cargo check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked
+cargo check --locked --all-targets
 ```
 
 To run the current scaffold, use `cargo run --quiet --`. The final shortlist command and its inputs will be documented during implementation.

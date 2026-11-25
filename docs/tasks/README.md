@@ -37,6 +37,8 @@ Follow numerical order for completed deliverables. Once TASK-001 defines the sce
 
 ## Engineering review checkpoints
 
+The [Rust engineering standards](../engineering-standards.md) define the gates for every implementation task and major review. Task-specific commands supplement those gates.
+
 | Checkpoint | When | Review focus |
 | --- | --- | --- |
 | R1 | After TASK-002 and before TASK-003 | Architecture, domain evidence, precision and invariants |
