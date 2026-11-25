@@ -2,9 +2,11 @@
 
 A local Rust CLI planned for finding and explaining venues that meet an event's hard requirements. The assessment case is a partner day near Utrecht with uncertain attendance, an approximate €15,000 budget and wheelchair access needs.
 
-## Phase 1 status
+## Project status
 
 The Cargo package and executable are named `venue-shortlist`. The library crate is `venue_shortlist`. The original [venue dataset](venues.json) is included. The executable is a scaffold that prints a status message to stderr and exits with status 1. Business implementation is reserved for Claude Code.
+
+Phase 2 added the implementation backlog. The first open task is to resolve the product decisions for the reference event.
 
 ## Development
 
@@ -24,6 +26,7 @@ To run the current scaffold, use `cargo run --quiet --`. The final shortlist com
 - [Requirements and client questions](docs/requirements.md)
 - [Venue data audit](docs/data-analysis.md)
 - [Architecture, dependencies and test strategy](docs/architecture.md)
+- [Implementation backlog and execution order](docs/tasks/README.md)
 - [Assessment notes](NOTES.md)
 - [Development history and validation](docs/assessment-log.md)
 
