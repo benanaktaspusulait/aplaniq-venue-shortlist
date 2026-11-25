@@ -34,4 +34,85 @@ The integration test read the original file and accounted for **30 source rows, 
 
 The Dutch part-day price has explicit locale context and is represented as 420,000 EUR minor units. The bare structured amount in v008 remains ambiguous while its rate basis, currency and VAT are retained. The v029 USD amount is preserved without conversion. Invalid zero seating in v027 retains the raw value and the separate note.
 
-Availability supports the observed March weekday rules, exact dates, exceptions, Q1 closure and lead time. Yearless March claims use a caller-supplied year and produce a diagnostic. Vague and monthless phrases remain unresolved. Travel and mandatory extra-cost notes are retained as text. The normaliser neither estimates these amounts nor verifies transport or bookings. Repeated JSON object member names are outside this input contract. The original export has none.
+Availability supports the observed March weekday rules, exact dates, exceptions, Q1 closure and lead time. Yearless March claims use a caller-supplied year and produce a diagnostic. Vague and monthless phrases remain unresolved. Travel and mandatory extra-cost notes are retained as text. The normaliser neither estimates these amounts nor verifies transport or bookings. The R2 correction reports repeated JSON members and rejects the affected row or ambiguous envelope. The original export has none.
+
+## Eligibility and ranking validation
+
+The unchanged original export produced 30 source rows, 30 normalised rows, 30 entities, no rejected input rows and 36 ingestion diagnostics. No pair was confirmed identical. Six listings form three potential pairs. `v004/v005`, `v009/v010` and `v023/v024` keep their source evidence and identity warnings.
+
+| Scenario | Eligible | Requires confirmation | Rejected |
+| --- | ---: | ---: | ---: |
+| 80 seated | 3 | 19 | 8 |
+| 120 seated | 1 | 16 | 13 |
+
+### Ranked for 80
+
+All three support 11, 16 and 18 March 2027 at day level. The suggested date is Thursday 11 March. Before booking, verify the slot, routes, accessible facilities and quote.
+
+| Rank | Venue | 80-person package and headroom | Order and 120-person result |
+| ---: | --- | --- | --- |
+| 1 | v019 De Stadstuin | €6,320, €8,680 headroom | Documented 12-minute Utrecht Centraal walk and strong greenhouse daylight. At 120, the €9,480 rate remains within budget, but 85 seats are insufficient. |
+| 2 | v028 Zaal Overvecht | €3,040, €11,960 headroom | Supported Utrecht Overvecht connection. Under the same transport and amenity preference buckets as v021, more headroom ranks it higher. At 120, the €4,560 rate remains within budget, but 100 seats are insufficient. |
+| 3 | v021 Fabriek 1912 | €5,440, €9,560 headroom | The listing describes rail access relative to Amsterdam and Eindhoven without precise journey times. Eligible at 120 with a stated €8,160 package and 130 listed seats. |
+
+### Conditional at 80
+
+| Venue | What to confirm | 120-person result if different |
+| --- | --- | --- |
+| v001 De Seinwachter | All-in quote with VAT and catering. | |
+| v005 Het Spoorhuis (Utrecht CS) | Date, quote, daylight, Wi-Fi and whether it is a distinct reservation space from v004. | |
+| v006 Kantoortuin Leidsche Rijn | VAT and a booking reference to verify six weeks' notice. | |
+| v007 Fort aan de Vecht | Accessible rooms excluding casemates, daylight and Wi-Fi outside casemates, and a practical route or shuttle. | |
+| v008 De Werkplaats 030 | Confirm event month and dates, the ambiguous `7.900` amount, VAT and catering. | Rejected. 100 seats. |
+| v009 Hotel Domzicht | Current all-in quote and whether v010 is the same event space. | |
+| v010 Hotel Domzicht Utrecht | Current quote, dates and event-space identity with v009. | Rejected. 110 seats. |
+| v011 Glashuis Papendorp | All-in quote with VAT and catering. | |
+| v012 Remise Amersfoort | Confirm which Thursdays are available. | |
+| v013 Loods Zeeburg | All-in quote and a practical rail plan for Eindhoven attendees. | |
+| v014 Strijp Kantine | Verify rail convenience for Amsterdam attendees. | |
+| v017 Het Atelier | Quote and step-free access to second-floor breakouts. | Rejected. 90 seated places. |
+| v020 Boothuis Kanaleneiland | Access, dates, all-in catering and price, and Wi-Fi suitability. | |
+| v023 Hub Moreelse | Quote with VAT and catering and whether v024 is a distinct space. | |
+| v024 HUB Moreelse — Event Floor | Dates, all-in quote and whether the event floor is separately bookable. | |
+| v026 Studio Wilhelmina | All-in pricing including catering. | |
+| v027 De Graanbeurs | Supported seated capacity and all-in price. The export's zero capacity is invalid. | |
+| v029 Lichthal Utrecht | Comparable EUR quote or an approved exchange basis for its USD quote. | |
+| v030 Paviljoen Griftpark | At least three simultaneous usable breakout rooms regardless of weather. | |
+
+### Rejected at both headcounts
+
+| Venue | Confirmed reasons |
+| --- | --- |
+| v002 Pakhuis Catharijne | The listing describes stairs-only required breakouts. |
+| v003 Villa Oudegracht | Insufficient seated capacity and no wheelchair access. |
+| v004 Spoorhuis Utrecht | Windowless plenary and Wi-Fi complaints. Linked to v005 for identity follow-up. |
+| v015 Landgoed Heidezicht | Taxi transfer and explicit absence of public transport. |
+| v016 Muziekzaal Tivoli-Oost | Two breakouts, €18,000 minimum before extras, and unacceptable daylight. |
+| v018 Congrescentrum Lunetten | Fully booked in Q1 2027. |
+| v022 Kasteel Nijenrode Bos | No wheelchair access. |
+| v025 Theehuis Rhijnauwen | Insufficient seats and breakouts, and weak Wi-Fi. |
+
+In addition to the three 80-person conditional entries that fail seating at 120, v019 and v028 also fail seating at that headcount.
+
+### Reason distributions
+
+Counts are per entity within the named verdict. An entity can contribute more than one reason. Availability is counted as a hard failure when every requested date is excluded.
+
+| Criterion | 80 rejected | 80 conditional | 120 rejected | 120 conditional |
+| --- | ---: | ---: | ---: | ---: |
+| Seating | 2 | 1 | 7 | 1 |
+| Breakouts | 2 | 1 | 2 | 1 |
+| Budget | 1 | 15 | 1 | 12 |
+| Accessibility | 3 | 3 | 3 | 2 |
+| Availability | 1 | 7 | 1 | 5 |
+| Transport | 1 | 3 | 1 | 3 |
+| Daylight | 2 | 2 | 2 | 2 |
+| Wi-Fi | 2 | 3 | 2 | 3 |
+| Identity | 0 | 5 | 0 | 4 |
+
+Reproduce the per-entity verdicts and observed ranking with:
+
+```sh
+cargo test --locked --test eligibility original_export_and_synthetic_stadstuin -- --nocapture
+cargo test --locked --test ranking original_export_produces_the_verified_shortlist -- --nocapture
+```

@@ -48,6 +48,14 @@ The public deduplication function borrows the ingestion report. Confirmed identi
 
 Each entity retains whole normalised listings as configurations. Field conflicts point to two different known claims on confirmed listings. Missing or unknown information leaves both source configurations intact. Quote amount, currency, billing basis, VAT and minimum spend stay with their original quote. Downstream evaluation must assess coherent source configurations and keep adverse unresolved claims visible. Original row indices break ties for a repeated ID and remain available alongside ingestion diagnostics.
 
+## Eligibility and recommendation APIs
+
+`assess_venues` consumes the deduplication report and an explicit event request. Each entity exposes both attendance verdicts, per-listing checks and costs, per-date verdicts and potential pairs. A confirmed entity must have agreement on a passing date. Potential duplicates that would otherwise qualify remain in follow-up. Evidence stays with each original listing.
+
+`rank_venues` takes the assessments and the same request. It partitions the authoritative primary verdicts and returns typed ranking factors. A supported preferred weekday wins first. Transport, daylight, Wi-Fi, comparable headroom and expansion follow. The earliest supported date within the chosen weekday is the suggested date. Shared entities use the least favourable supported transport and quality factors across their listings. A cost disagreement yields absent headroom. The final tie-break uses the listing ID, identity details and, on collision, source configuration details before the original index. Ranking returns all eligible entries because no presentation limit was agreed.
+
+Weighted scoring would permit a later preference to offset an earlier one and would require weights the client did not specify. Lexicographic ordering implements PD-007 directly and exposes the actual compared factors for future rendering.
+
 ## Dependencies
 
 TASK-002 uses `chrono` 0.4.45 as its sole direct dependency for validated dates and weekdays, with default features disabled. Integer minor units and standard Rust types cover the other domain invariants. Add dependencies when a feature uses them and verify the selected versions against the supported Rust toolchain.
@@ -55,7 +63,7 @@ TASK-002 uses `chrono` 0.4.45 as its sole direct dependency for validated dates 
 | Crate | Recommendation and rationale |
 | --- | --- |
 | `serde_json` | Selected for the heterogeneous JSON envelope and fields. `arbitrary_precision` preserves decimal number text for checked conversion to integer minor units. [Documentation](https://docs.rs/serde_json/latest/serde_json/) |
-| `serde` | Add directly if deriving types for the stable document envelope, request or machine-readable report. The initial ingestion uses `serde_json::Value` and omits a direct Serde dependency. [Documentation](https://serde.rs/) |
+| `serde_core` | Uses the already locked map visitor to detect repeated JSON properties while their values are still available as source slices. [Documentation](https://docs.rs/serde_core/1.0.229/serde_core/) |
 | `clap` | Add when the approved CLI has multiple flags or typed inputs requiring consistent help and validation. A single optional path can use `std::env::args_os`. [Documentation](https://docs.rs/clap/latest/clap/) |
 | `chrono` | Selected for `NaiveDate` and `Weekday` in the request and availability evidence. Pure calendar dates need no clock or timezone features. [Documentation](https://docs.rs/chrono/latest/chrono/struct.NaiveDate.html) |
 | `rust_decimal` | Defer while checked integer minor units cover amounts such as €72.50 and integer attendee multiplication. Revisit if fractional tax, FX or another approved calculation needs decimal arithmetic and explicit rounding. [Documentation](https://docs.rs/rust_decimal/latest/rust_decimal/) |

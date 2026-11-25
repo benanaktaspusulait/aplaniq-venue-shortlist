@@ -2,7 +2,7 @@
 
 ## Status
 
-To do.
+Complete. Independent R3 is pending.
 
 ## Objective
 
@@ -18,7 +18,7 @@ Planners need to compare the merits of confirmed options and understand the reas
 
 ## Requirements and scope
 
-Apply the approved preferences, such as Thursday, rail access, daylight, Wi-Fi or comparable cost. Enforce the agreed shortlist limit after ranking. Return readable ranking factors in the typed report, with stable tie-breaking and diagnostic order.
+Apply the approved preferences, such as Thursday, rail access, daylight, Wi-Fi or comparable cost. Return the eligible list in full. No presentation limit was agreed. Return readable ranking factors in the typed report, with stable tie-breaking and diagnostic order.
 
 ## Explicitly out of scope
 
@@ -33,6 +33,10 @@ Re-evaluating hard criteria, personalised or learned scores, CLI presentation an
 See the [requirements and acceptance matrix](../requirements.md).
 
 Apply the approved ordering in PD-007 and verify AC-11–12. The working policy uses ordered factors including comparable budget headroom and expansion fit, with a separate confirmation list. Use a stable source or group ID as the final key. Carry relevant evidence through to the report.
+
+## Implementation plan
+
+Partition the existing verdicts. Derive a lexicographic key and report factors from the same date, transport, quality, budget and expansion evidence. Verify the key order and explain the observed shortlist for the original export.
 
 ## Acceptance criteria
 
@@ -51,6 +55,10 @@ Primary preference, precedence between competing preferences, ties, permutation,
 ## Definition of done
 
 Documented ranking factors, ordering and traceable explanations have passing tests. Review and commit locally.
+
+## Observed outcome
+
+The original export ranked De Stadstuin (v019), Zaal Overvecht (v028) and Fabriek 1912 (v021) in that order. Fabriek 1912 alone qualifies at 120. The [dataset validation](../data-analysis.md#eligibility-and-ranking-validation) records costs, dates, reasons and all conditional and rejected entries.
 
 ## Risks and unresolved assumptions
 
