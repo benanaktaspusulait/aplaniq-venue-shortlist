@@ -336,10 +336,21 @@ fn accessibility(value: &Value) -> Result<Accessibility, Issue> {
             let lower = original.to_ascii_lowercase();
             match lower.as_str() {
                 "yes" => Ok(Accessibility::ReportedAccessible),
-                "no" => Ok(Accessibility::Inaccessible),
+                "no" | "no wheelchair access" => Ok(Accessibility::Inaccessible),
                 "unknown" | "ask" => Err((Unknown, "wheelchair access is unconfirmed")),
                 "ground floor only" => Ok(Accessibility::Partial(original.to_owned())),
-                _ if lower.starts_with("yes, except ") || lower.starts_with("lift to ") => {
+                _ if lower.starts_with("yes, except ")
+                    || lower.starts_with("lift to ")
+                    || ((lower.contains("breakout") || lower.contains("plenary"))
+                        && [
+                            "stairs only",
+                            "stairs-only",
+                            "inaccessible",
+                            "no step-free access",
+                        ]
+                        .iter()
+                        .any(|claim| lower.contains(claim))) =>
+                {
                     Ok(Accessibility::Partial(original.to_owned()))
                 }
                 _ => Err((Unsupported, "unrecognised accessibility detail")),
@@ -426,6 +437,9 @@ fn wifi(value: &Value) -> Result<Quality, Issue> {
             Ok(Quality::Strong)
         }
         "weak" | "poor" | "unreliable" | "complaints reported" => Ok(Quality::Unacceptable),
+        "poor wifi in plenary" | "unreliable wifi in plenary" | "plenary wifi is poor" => {
+            Ok(Quality::Partial)
+        }
         "guest wifi" | "fair" => Ok(Quality::Partial),
         "unknown" => Err((Unknown, "Wi-Fi quality is unconfirmed")),
         label if label.starts_with("4g backup only ") => Ok(Quality::Partial),

@@ -2,7 +2,7 @@
 
 ## Status
 
-To do.
+Complete. The original export passed the two-scenario regression.
 
 ## Objective
 
@@ -34,6 +34,10 @@ See the [requirements and acceptance matrix](../requirements.md).
 
 Apply PD-001–007, AC-03–10 and AC-15. Distinguish preliminary eligibility from booking verification. Run the same hard checks separately at 80 and 120. Evaluate all hard criteria together for each allowed date. A hard failure rules out that date and a date-independent failure rules out all dates. Make the reference date explicit for lead time. Keep an incomplete estimate unresolved when it cannot prove a pass. A proven lower bound can reject if already above a firm cap.
 
+## Implementation plan
+
+Implement pure checks for whole source listings, typed budget evidence and per-date outcomes. Aggregate dates within each attendance scenario and compare decisions across confirmed source configurations. Carry potential identity pairs to follow-up without transferring evidence. Verify the original export and an equivalent synthetic Stadstuin case.
+
 ## Acceptance criteria
 
 - Given all hard criteria pass, return `Eligible` and supporting reasons. Given one hard failure and otherwise passing or unknown evidence, return `Rejected`. Given no failures and an unresolved hard criterion, return `RequiresConfirmation`.
@@ -51,6 +55,10 @@ Apply PD-001–007, AC-03–10 and AC-15. Distinguish preliminary eligibility fr
 ## Definition of done
 
 The approved policy has a tested decision table and actionable per-criterion evidence. Run the checks, inspect the diff and commit locally.
+
+## Observed outcome
+
+The original export produced 3 eligible, 19 conditional and 8 rejected entities for 80 attendees. At 120 it produced 1 eligible, 16 conditional and 13 rejected entities. De Stadstuin passes at 80 with a stated €6,320 package and fails seating at 120, where the same rate gives €9,480. An equivalent synthetic listing repeats both verdicts. Run `sh scripts/quality-gate.sh` and `cargo test --locked --test eligibility original_export_and_synthetic_stadstuin -- --nocapture` to reproduce the gate and distributions.
 
 ## Risks and unresolved assumptions
 

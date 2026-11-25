@@ -257,8 +257,8 @@ fn weekday_pattern(label: &str) -> Option<&'static [Weekday]> {
     match label {
         "tue/thu" | "tue and thu" => Some(&[Tue, Thu]),
         "mon-fri" | "weekdays" => Some(&[Mon, Tue, Wed, Thu, Fri]),
-        "thursdays" => Some(&[Thu]),
-        "tuesdays" => Some(&[Tue]),
+        "thu" | "thursday" | "thursdays" => Some(&[Thu]),
+        "tue" | "tuesday" | "tuesdays" => Some(&[Tue]),
         _ => None,
     }
 }
