@@ -170,10 +170,11 @@ pub struct Money {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Price {
-    pub amount: Money,
-    pub basis: PriceBasis,
+    pub amount: Evidence<MinorUnits>,
+    pub currency: Evidence<Currency>,
+    pub basis: Evidence<PriceBasis>,
     pub kind: PriceKind,
-    pub vat: VatStatus,
+    pub vat: Evidence<VatStatus>,
     pub minimum_spend: Evidence<MinorUnits>,
 }
 
@@ -195,7 +196,6 @@ pub enum PriceKind {
 pub enum VatStatus {
     Included,
     Excluded,
-    Unknown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -217,6 +217,7 @@ pub enum Accessibility {
 pub struct Availability {
     pub rules: Vec<AvailabilityRule>,
     pub minimum_notice_days: Option<u32>,
+    pub preferred_weekday: Option<Weekday>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -372,13 +373,11 @@ mod tests {
     #[test]
     fn invalid_minimum_spend_is_distinct_from_an_absent_floor() {
         let price = Price {
-            amount: Money {
-                currency: Currency::Eur,
-                minor_units: MinorUnits::new(9_500),
-            },
-            basis: PriceBasis::PerPerson,
+            amount: Evidence::Known(MinorUnits::new(9_500)),
+            currency: Evidence::Known(Currency::Eur),
+            basis: Evidence::Known(PriceBasis::PerPerson),
             kind: PriceKind::Quoted,
-            vat: VatStatus::Excluded,
+            vat: Evidence::Known(VatStatus::Excluded),
             minimum_spend: Evidence::Invalid {
                 raw: "-100".to_owned(),
             },
