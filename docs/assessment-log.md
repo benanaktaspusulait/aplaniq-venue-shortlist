@@ -42,3 +42,10 @@ This work was local. No client questions were sent and no repository was pushed 
 
 - The candidate revised PD-001–007 to distinguish preliminary shortlist eligibility from booking readiness. The documented access flag and public transport evidence can support provisional eligibility. The revised policy rejects explicitly unacceptable light or Wi-Fi and adds the v019 80/120 regression. These are candidate-approved working assumptions. No client questions were sent or answered.
 - Installed Claude Code 2.1.332 in a temporary directory and ran its authentication check. It reported no signed-in account. The candidate then explicitly directed Codex to implement the tasks. No Claude Code model session ran. Using Codex for implementation deviates from the assessment PDF’s Claude Code requirement. No GSD artifacts were generated.
+
+## 25 November 2026, TASK-002
+
+- Codex implemented the typed event request, venue and source evidence, price and capacity invariants, availability and assessment outcomes. Codex reviewed the staged diff. Ingestion, eligibility, deduplication, ranking and CLI behaviour were outside this task. TASK-003 did not start.
+- Selected `chrono` 0.4.45 with default features disabled for `NaiveDate` and `Weekday`. Deferred `serde` and `serde_json` until ingestion, `clap` until CLI needs are known, and `rust_decimal` while checked integer minor units suffice.
+- The formatter check caught a layout difference after the invalid-evidence payload was added. Ran rustfmt and reran all four gates successfully. `cargo test` ran six passing library tests and zero binary or doc tests. Inspected the one-page A4 render of NOTES. Confirmed the original dataset bytes match the ZIP. Checked the v019 source facts and per-person arithmetic, with the end-to-end regression still to be implemented in the later tasks.
+- The observed interval from the first repository check at 19:35:47 GMT through the TASK-002 implementation commit at 19:40:06 GMT was 4 minutes 19 seconds, excluding this final handoff update. The pre-existing staged `.gitignore` was preserved. No push or client communication took place.

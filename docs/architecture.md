@@ -44,14 +44,14 @@ The [product decision record](requirements.md#working-product-decisions) owns th
 
 ## Dependencies
 
-Phase 1 uses the standard library. Add dependencies when a feature uses them and verify the selected versions against the supported Rust toolchain.
+TASK-002 uses `chrono` 0.4.45 as its sole direct dependency for validated dates and weekdays, with default features disabled. Integer minor units and standard Rust types cover the other domain invariants. Add dependencies when a feature uses them and verify the selected versions against the supported Rust toolchain.
 
 | Crate | Recommendation and rationale |
 | --- | --- |
 | `serde_json` | Add for ingestion. It parses JSON and supports inspecting heterogeneous field values with `Value`. Retain exact decimal text or use appropriate parser settings for money before converting to minor units. [Documentation](https://docs.rs/serde_json/latest/serde_json/) |
 | `serde` | Add directly if deriving types for the stable document envelope, request or machine-readable report. Initial ingestion using only `serde_json::Value` can omit the direct dependency. [Documentation](https://serde.rs/) |
 | `clap` | Add when the approved CLI has multiple flags or typed inputs requiring consistent help and validation. A single optional path can use `std::env::args_os`. [Documentation](https://docs.rs/clap/latest/clap/) |
-| `chrono` | Recommend `NaiveDate` when validating dates and weekdays, handling exceptions and checking lead times. Pure calendar dates need no clock or timezone features. [Documentation](https://docs.rs/chrono/latest/chrono/struct.NaiveDate.html) |
+| `chrono` | Selected for `NaiveDate` and `Weekday` in the request and availability evidence. Pure calendar dates need no clock or timezone features. [Documentation](https://docs.rs/chrono/latest/chrono/struct.NaiveDate.html) |
 | `rust_decimal` | Defer while checked integer minor units cover amounts such as €72.50 and integer attendee multiplication. Revisit if fractional tax, FX or another approved calculation needs decimal arithmetic and explicit rounding. [Documentation](https://docs.rs/rust_decimal/latest/rust_decimal/) |
 | `thiserror` | Defer. A small library error enum can implement `Display` and `Error` directly. Consider the derive if several wrapper variants need consistent sources. [Documentation](https://docs.rs/thiserror/latest/thiserror/) |
 | `anyhow` | Defer. Add CLI context through explicit messages and standard errors. Consider it at the binary boundary if contextual error plumbing grows. [Documentation](https://docs.rs/anyhow/latest/anyhow/) |

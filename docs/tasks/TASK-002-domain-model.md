@@ -2,7 +2,7 @@
 
 ## Status
 
-To do.
+Complete. Codex implemented the domain and verified six unit tests. See the [assessment log](../assessment-log.md).
 
 ## Objective
 
@@ -26,7 +26,7 @@ Parsing venue values, evaluating policy, scoring, CLI message wording and a gene
 
 ## Expected files and modules
 
-`src/lib.rs`, `src/domain.rs` and local unit tests. Add `Cargo.toml` and `Cargo.lock` changes only when a dependency has a caller.
+`src/lib.rs` exports `src/domain.rs`, which contains the domain and unit tests. `Cargo.toml` and `Cargo.lock` declare `chrono` for validated calendar dates.
 
 ## Implementation guidance
 

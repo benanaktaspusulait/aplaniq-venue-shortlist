@@ -1,6 +1,6 @@
 # AplanIQ Venue Shortlist implementation backlog
 
-This is the implementation backlog. It is based on both pages of the original assessment, the supplied `venues.json` and the Phase 1 [requirements](../requirements.md), [architecture](../architecture.md) and [data audit](../data-analysis.md). TASK-001 is complete with candidate-approved working assumptions. TASK-002 is next.
+This is the implementation backlog. It is based on both pages of the original assessment, the supplied `venues.json` and the Phase 1 [requirements](../requirements.md), [architecture](../architecture.md) and [data audit](../data-analysis.md). TASK-001 is complete with candidate-approved working assumptions. TASK-002 is complete. TASK-003 is next.
 
 ## Backlog and execution order
 
@@ -59,7 +59,7 @@ TASK-003 parses evidence, TASK-004 handles identity and conflicts, TASK-005 deci
 
 The tasks cover the assessment without a separate dependency-selection milestone, duplicate testing project or infrastructure work. The gaps are product policy, the executable feature, genuine Claude Code planning artifacts, verified review and authorised delivery.
 
-The original active-work estimate is **141 minutes**, including **109 minutes** for TASK-002–008 implementation and validation. TASK-002–010 total 129 minutes, after the TASK-001 policy review. The first recorded Phase 1 check through final verification took **3 minutes 59 seconds**. Count Phase 2, TASK-001 and any other assessment work against the same 180-minute cap. See the [assessment log](../assessment-log.md) for measured intervals. Protect the last 20 minutes for review and final verification, already included in the 141-minute estimate. If pressure increases, reduce parser breadth for undocumented formats, cosmetic output work and optional follow-up display. Protect the working command, hard filters, ranked results, focused tests and honest notes. At the limit, stop and record what remains.
+The original active-work estimate is **141 minutes**, including **109 minutes** for TASK-002–008 implementation and validation. TASK-003–010 total 121 estimated minutes after TASK-002. The first recorded Phase 1 check through final verification took **3 minutes 59 seconds**. Count Phase 2, TASK-001 and any other assessment work against the same 180-minute cap. See the [assessment log](../assessment-log.md) for measured intervals. Protect the last 20 minutes for review and final verification, already included in the 141-minute estimate. If pressure increases, reduce parser breadth for undocumented formats, cosmetic output work and optional follow-up display. Protect the working command, hard filters, ranked results, focused tests and honest notes. At the limit, stop and record what remains.
 
 ## Agent workflow
 
