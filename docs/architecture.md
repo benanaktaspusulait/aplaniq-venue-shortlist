@@ -69,10 +69,6 @@ TASK-002 uses `chrono` 0.4.45 as its sole direct dependency for validated dates 
 | Hard requirements | A failed hard rule overrides an otherwise excellent fit and any unresolved rule. An unknown hard requirement cannot enter the confirmed shortlist. Verify an empty shortlist and confirmed/follow-up counts. |
 | Ranking and output | Exercise ties, repeat calls and permuted records with stable IDs. A small end-to-end fixture verifies report order, reasons, source IDs, warnings, stdout/stderr and exit status. Run the final documented command against the original dataset, including the v019 80/120 regression and equivalent synthetic evidence (AC-15). |
 
-## Proposed implementation sequence
+## Implementation and review sequence
 
-1. Record the product decisions and Claude Code plan. Define the request, evidence types and one end-to-end fixture.
-2. Implement JSON ingestion and the observed normalisation cases. Add focused tests for evidence and diagnostics.
-3. Handle duplicate candidates and conflicts, then implement hard checks for the agreed event policy.
-4. Add ranking, explanations and CLI output. Document the local command and verify it with the unmodified dataset.
-5. Review actual diffs, steer fixes, rerun the checks and complete the review section in `NOTES.md`. Commit each coherent change and keep the planning artifacts.
+Use the [backlog and review checkpoints](tasks/README.md#engineering-review-checkpoints). Review the domain before ingestion (R1), data processing after deduplication (R2), hard rules and ranking after TASK-006 (R3), and the complete pipeline after end-to-end validation (R4, TASK-009). Verify each checkpoint against actual diffs, tests, business decisions, architecture and history. Keep findings and verified corrections in the assessment log.

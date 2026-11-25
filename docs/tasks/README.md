@@ -8,30 +8,41 @@ This is the implementation backlog. It is based on both pages of the original as
 | --- | --- | --- | --- |
 | [TASK-001](TASK-001-requirements.md) | Requirements, product decisions and reference event scenario | None | 12 min original estimate |
 | [TASK-002](TASK-002-domain-model.md) | Rust domain, evidence, error and report types | 001 | 8 min |
-| [TASK-003](TASK-003-normalisation.md) | JSON ingestion and normalisation of observed shapes | 002 | 30 min |
+| [TASK-003](TASK-003-normalisation.md) | JSON ingestion and normalisation of observed shapes | 002, R1 | 30 min |
 | [TASK-004](TASK-004-deduplication.md) | Conservative duplicate handling and conflicting evidence | 003 | 10 min |
-| [TASK-005](TASK-005-eligibility.md) | Hard requirements and criterion-level results | 003, 004 | 27 min |
+| [TASK-005](TASK-005-eligibility.md) | Hard requirements and criterion-level results | 003, 004, R2 | 27 min |
 | [TASK-006](TASK-006-ranking.md) | Deterministic ranking and recommendation reasons | 005 | 9 min |
-| [TASK-007](TASK-007-cli.md) | Local CLI, report and first documented invocation | 006 | 13 min |
+| [TASK-007](TASK-007-cli.md) | Local CLI, report and first documented invocation | 006, R3 | 13 min |
 | [TASK-008](TASK-008-validation.md) | Integration and original-dataset validation | 007 | 12 min |
-| [TASK-009](TASK-009-code-review.md) | Independent evidence review and targeted fixes | 008 | 12 min |
+| [TASK-009](TASK-009-code-review.md) | R4 final independent review and targeted fixes | 008 | 12 min |
 | [TASK-010](TASK-010-submission.md) | Final checks and private-submission handoff | 009 | 8 min |
 
 ```mermaid
 flowchart LR
     T001["001 Requirements"] --> T002["002 Domain"]
-    T002 --> T003["003 Normalisation"]
+    T002 --> R1["R1 Architecture and domain"] --> T003["003 Normalisation"]
     T003 --> T004["004 Deduplication"]
     T003 --> T005["005 Eligibility"]
-    T004 --> T005
+    T004 --> R2["R2 Data processing"] --> T005
     T005 --> T006["006 Ranking"]
-    T006 --> T007["007 CLI"]
+    T006 --> R3["R3 Business logic and ranking"] --> T007["007 CLI"]
     T007 --> T008["008 Validation"]
-    T008 --> T009["009 Review"]
+    T008 --> T009["009 / R4 Final independent review"]
     T009 --> T010["010 Submission"]
 ```
 
 Follow numerical order for completed deliverables. Once TASK-001 defines the scenario and policies, the integration fixture and expected results can be drafted alongside the core work. Once the report contract is agreed, CLI argument and rendering tests can be drafted before the full pipeline is wired. Complete and verify each task after its dependencies.
+
+## Engineering review checkpoints
+
+| Checkpoint | When | Review focus |
+| --- | --- | --- |
+| R1 | After TASK-002 and before TASK-003 | Architecture, domain evidence, precision and invariants |
+| R2 | After TASK-004 and before TASK-005 | Ingestion, record accounting, evidence preservation and identity handling |
+| R3 | After TASK-006 and before TASK-007 | Hard rules, policy traceability, ranking and regression tests |
+| R4 | After TASK-008, as TASK-009 | Independent review of end-to-end behaviour and readiness |
+
+At each checkpoint inspect actual source, tests and results, applicable business rules, architecture, recent diffs and Git history. Run the relevant gates. Record severity, file and line, evidence, impact, correction and test result in the [assessment log](../assessment-log.md). Commit verified corrections separately. R4 uses TASK-009's independent review, with no duplicate task.
 
 ## Assessment traceability
 

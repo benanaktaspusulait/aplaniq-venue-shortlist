@@ -1,4 +1,4 @@
-# TASK-009 — Independent Code Review
+# TASK-009 — Final Independent Code Review (R4)
 
 ## Status
 
@@ -30,7 +30,7 @@ Broad rewrites, speculative refactoring, artificial findings and allowing a revi
 
 ## Implementation guidance
 
-Start with hard rules, unknowns, date exceptions, price arithmetic, duplicate conflicts and reproducibility. Use a file or commit reference per actionable finding. Ask Claude Code for focused fixes and check the resulting diff and tests. Record any small manual edit and its location.
+Start with hard rules, unknowns, date exceptions, price arithmetic, duplicate conflicts and reproducibility. Use a file or commit reference per actionable finding. Request focused fixes from the implementing agent and check the resulting diff and tests. Record any small manual edit and its location.
 
 ## Acceptance criteria
 
