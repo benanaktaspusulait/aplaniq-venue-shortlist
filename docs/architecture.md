@@ -22,7 +22,7 @@ flowchart LR
 | --- | --- |
 | `main.rs` | Parse arguments, read the file, call the library, render the report to stdout and write errors to stderr with a suitable exit status. |
 | `lib.rs` and `domain` | Coordinate the pipeline. Define the event request, venue facts, evidence states and typed report. |
-| `ingest` | Validate the JSON envelope and enumerate records with source references. Fatal document errors stop the run. A recoverable record or field problem produces a diagnostic with an ID or index and its field path. |
+| `ingest` | Expose file loading and in-memory parsing. Reject unreadable documents, bad JSON and invalid envelopes. Account for every row and give rejected rows and recoverable field issues source references. |
 | `normalize` | Convert supported field shapes into typed capacity, price, availability, travel and accessibility evidence. Preserve raw values and source references for unresolved facts. |
 | `dedup` | Compare the known identity signals and record confidence and conflicts. Only apply an identity or precedence rule once agreed. |
 | `evaluate` | Evaluate each hard requirement against the request and evidence. Record pass, fail or unresolved with a reason. |
@@ -48,8 +48,8 @@ TASK-002 uses `chrono` 0.4.45 as its sole direct dependency for validated dates 
 
 | Crate | Recommendation and rationale |
 | --- | --- |
-| `serde_json` | Add for ingestion. It parses JSON and supports inspecting heterogeneous field values with `Value`. Retain exact decimal text or use appropriate parser settings for money before converting to minor units. [Documentation](https://docs.rs/serde_json/latest/serde_json/) |
-| `serde` | Add directly if deriving types for the stable document envelope, request or machine-readable report. Initial ingestion using only `serde_json::Value` can omit the direct dependency. [Documentation](https://serde.rs/) |
+| `serde_json` | Selected for the heterogeneous JSON envelope and fields. `arbitrary_precision` preserves decimal number text for checked conversion to integer minor units. [Documentation](https://docs.rs/serde_json/latest/serde_json/) |
+| `serde` | Add directly if deriving types for the stable document envelope, request or machine-readable report. The initial ingestion uses `serde_json::Value` and omits a direct Serde dependency. [Documentation](https://serde.rs/) |
 | `clap` | Add when the approved CLI has multiple flags or typed inputs requiring consistent help and validation. A single optional path can use `std::env::args_os`. [Documentation](https://docs.rs/clap/latest/clap/) |
 | `chrono` | Selected for `NaiveDate` and `Weekday` in the request and availability evidence. Pure calendar dates need no clock or timezone features. [Documentation](https://docs.rs/chrono/latest/chrono/struct.NaiveDate.html) |
 | `rust_decimal` | Defer while checked integer minor units cover amounts such as €72.50 and integer attendee multiplication. Revisit if fractional tax, FX or another approved calculation needs decimal arithmetic and explicit rounding. [Documentation](https://docs.rs/rust_decimal/latest/rust_decimal/) |

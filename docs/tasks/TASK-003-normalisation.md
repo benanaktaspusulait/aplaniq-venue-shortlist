@@ -2,7 +2,7 @@
 
 ## Status
 
-To do.
+Complete. The original export integration test accounted for all 30 rows. The [assessment log](../assessment-log.md) lists the diagnostics count, gates and follow-up review fix.
 
 ## Objective
 
@@ -14,7 +14,7 @@ The export mixes numbers, strings, objects and nulls. Coercion without provenanc
 
 ## Dependencies
 
-[TASK-002](TASK-002-domain-model.md) for evidence and diagnostic types.
+[TASK-002](TASK-002-domain-model.md) for evidence types and [R1](README.md#engineering-review-checkpoints) for review clearance.
 
 ## Requirements and scope
 
@@ -26,7 +26,7 @@ Deciding if evidence satisfies an event, choosing a duplicate winner, live venue
 
 ## Expected files and modules
 
-`src/ingest.rs`, `src/normalize.rs`, `src/lib.rs`, targeted unit tests, and `Cargo.toml`/`Cargo.lock` for dependencies used here.
+`src/ingest.rs`, `src/normalize.rs` and its price and availability modules, `src/domain.rs`, `src/lib.rs`, targeted unit tests and `tests/ingestion.rs`. `Cargo.toml` and `Cargo.lock` declare the JSON reader.
 
 ## Implementation guidance
 
@@ -46,7 +46,7 @@ Malformed JSON, incorrect envelope, missing/null/type-mismatched fields, v002 an
 
 ## Validation commands
 
-`cargo fmt --all -- --check`, `cargo test --lib`, `git diff --exit-code HEAD -- venues.json`.
+`cargo fmt --all -- --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test --locked`, `cargo check --locked` and byte comparison of `venues.json` with the original ZIP.
 
 ## Definition of done
 

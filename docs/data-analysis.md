@@ -27,3 +27,11 @@ SHA-256 `7a943c847d7e18dd4ee00ff4b93a4335b04749e9b3c1af18db20c037fc4e3a52`.
 | v023 and v024 | Moreelse name, same station, walk time, capacity and breakout count | €8,900 versus €9,400 per day and weekday availability versus ask. The event-floor label may represent a distinct inventory item. |
 
 No pair has a shared ID or address that proves identity. Avoid picking the most favourable values from either listing. Keep confirmed conflicts and uncertain identity visible in the report until a merge or precedence rule is approved.
+
+## TASK-003 normalisation result
+
+The integration test read the original file and accounted for **30 source rows, 30 normalised venues, zero rejected records and 36 diagnostics**. Diagnostics include year assumptions and unresolved evidence. They do not count as venue eligibility verdicts. Required ID and name failures reject individual synthetic test rows with index-based diagnostics.
+
+The Dutch part-day price has explicit locale context and is represented as 420,000 EUR minor units. The bare structured amount in v008 remains ambiguous while its rate basis, currency and VAT are retained. The v029 USD amount is preserved without conversion. Invalid zero seating in v027 retains the raw value and the separate note.
+
+Availability supports the observed March weekday rules, exact dates, exceptions, Q1 closure and lead time. Yearless March claims use a caller-supplied year and produce a diagnostic. Vague and monthless phrases remain unresolved. Travel and mandatory extra-cost notes are retained as text. The normaliser neither estimates these amounts nor verifies transport or bookings. Repeated JSON object member names are outside this input contract. The original export has none.
