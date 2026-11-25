@@ -1,6 +1,6 @@
 # AplanIQ Venue Shortlist implementation backlog
 
-This is the implementation backlog. It is based on both pages of the original assessment, the supplied `venues.json` and the Phase 1 [requirements](../requirements.md), [architecture](../architecture.md) and [data audit](../data-analysis.md). TASK-001 is complete with candidate-approved working assumptions. TASK-002 is complete. R1 passed. TASK-003 and TASK-004 are complete. Independent R2 is next.
+This is the implementation backlog. It is based on both pages of the original assessment, the supplied `venues.json` and the Phase 1 [requirements](../requirements.md), [architecture](../architecture.md) and [data audit](../data-analysis.md). TASK-001 is complete with candidate-approved working assumptions. TASK-002 is complete. R1 passed. TASK-003 and TASK-004 are complete. R2 returned **NO-GO**. Close the [P0 data-integrity findings](../engineering/standards-audit.md#unresolved-findings) before TASK-005.
 
 ## Backlog and execution order
 
