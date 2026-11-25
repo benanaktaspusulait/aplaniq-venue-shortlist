@@ -30,6 +30,8 @@ Fuzzy matching infrastructure, geocoding, external searches and filling facts fr
 
 ## Implementation guidance
 
+See the [requirements and acceptance matrix](../requirements.md).
+
 Use evidence such as known name variants, location and station aliases with small deterministic comparisons. Check that room or building qualifiers can denote distinct inventory. Preserve source-specific evidence and expose disagreements for hard fields. Document any dataset-specific identity override and its basis.
 
 ## Acceptance criteria
@@ -52,7 +54,7 @@ Identity decisions and field conflicts are auditable in tests and downstream dat
 
 ## Risks and unresolved assumptions
 
-No supplier address proves identity for the three pairs. The Moreelse event floor might be separate inventory. Conservative warnings may be the only reliable treatment.
+No supplier address proves identity for the three pairs. See PD-006 and AC-10. The Moreelse event floor might be separate inventory. Conservative warnings may be the only reliable treatment.
 
 ## Estimated effort
 

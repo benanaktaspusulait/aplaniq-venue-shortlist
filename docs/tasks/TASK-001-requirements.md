@@ -2,11 +2,11 @@
 
 ## Status
 
-To do. Phase 1 requirements and data audit exist. Product decisions are pending.
+Ready for human review. PD-001–007 are proposed. Approval is pending and TASK-002 has not started.
 
 ## Objective
 
-Define a testable partner-day request and agree on the rules the implementation will use.
+Provide a testable partner-day request and concrete rule proposals for the human to approve or revise.
 
 ## Business justification
 
@@ -18,7 +18,7 @@ None. Read the assessment PDF and the [requirements](../requirements.md) and [da
 
 ## Requirements and scope
 
-Confirmed inputs are the client's stated needs and preferences and the assessment's shortlist deliverable. Record the approved headcount scenario, plenary layout, minimum breakouts, candidate dates and duration, rail criterion, budget components, accessibility evidence, daylight and Wi-Fi policy, and publication of unresolved candidates. Record the shortlist limit and rank priorities, or explicitly leave them uncapped or unweighted.
+Confirmed inputs are the client's stated needs and preferences and the assessment's shortlist deliverable. The [requirements](../requirements.md) hold the reference scenario, decision record and acceptance criteria. Resolve the pending policy choices there before releasing TASK-002.
 
 ## Explicitly out of scope
 
@@ -30,17 +30,17 @@ Rust implementation, venue verification, booking and contacting the client durin
 
 ## Implementation guidance
 
-Use the three questions already drafted. Record unanswered points as assumptions selected by the human, with alternatives and reasons. March 2027 has supporting clues in the dataset and is still an assumption. Define how any incomplete price, vague date or general access claim affects the shortlist. Agree the minimum CLI inputs and which rules remain fixed for this case.
+Review the three draft questions and PD-001–007. Track client answers separately from human-approved engineering assumptions. Freeze the reference request and minimum CLI inputs after approval.
 
 ## Acceptance criteria
 
 - Given the original client message, each stated need or preference maps to an explicit requirement, preference or documented open question.
-- Before implementation, `NOTES.md` records at least three decisions as question, options, selected rule and rationale. Reported client answers have an actual source. Record any remaining assumptions that can change eligibility and how to handle them.
+- The review draft records at least three proposals as question, alternatives, recommended rule and rationale. Before implementation, record the actual choices and actual sources of any client answers.
 - A baseline scenario and expected outcome for representative venue cases are concrete enough to derive tests without inferring a threshold from prose.
 
 ## Required tests and edge cases
 
-Tabletop review of at least v019 at 80 vs 120, v017 for uncertain price and room access, and a quote below €15,000 before excluded costs. Review first eligible day versus a venue that has only an explicitly excluded Tuesday or Thursday.
+Review AC-01–14 in the requirements. Verify the fixture assumptions and expected outcomes before sending the task to Claude Code.
 
 ## Validation commands
 
@@ -48,7 +48,7 @@ Tabletop review of at least v019 at 80 vs 120, v017 for uncertain price and room
 
 ## Definition of done
 
-The human can hand Claude Code a single baseline, an explicit policy for ambiguous evidence and a concise decision record. Commit the reviewed change locally.
+The draft is ready for review with a single baseline and testable proposals. Mark the task complete and unblock TASK-002 only after the human approves or revises the policy and the final decisions are recorded.
 
 ## Risks and unresolved assumptions
 

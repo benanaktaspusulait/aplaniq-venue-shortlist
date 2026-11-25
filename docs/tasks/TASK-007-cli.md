@@ -30,13 +30,15 @@ Interactive prompts, a UI or API, additional export formats and reimplementation
 
 ## Implementation guidance
 
+See the [requirements and acceptance matrix](../requirements.md).
+
 Keep path and argument handling in the binary. Use the standard library for a simple path argument or consider `clap` if several typed flags need validation and help. Render name or stable ID, hard-criteria rationale and ranking factors, relevant caveats and empty-result reasons. State the key assumptions for the default event request.
 
 ## Acceptance criteria
 
 - Given the original export and documented command, the binary exits successfully and prints a readable ranked shortlist or an explained empty result.
 - Given an invalid input path or malformed document, the CLI exits non-zero with actionable stderr and no partial report on stdout.
-- Given a typed report with an unresolved candidate, the renderer follows the agreed publication policy and cannot present it as confirmed.
+- Given a typed report with an unresolved candidate, render it in follow-up under the proposed policy and label its unresolved evidence. See AC-12–13.
 
 ## Required tests and edge cases
 

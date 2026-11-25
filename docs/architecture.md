@@ -1,6 +1,6 @@
 # Proposed Rust CLI architecture
 
-The CLI reads a local JSON file and an explicit event request. A synchronous library evaluates the supplied evidence and returns a report. The report depends on its inputs and documented policy, including any booking reference date or supplied exchange rate. System time, network services and terminal state are outside the core.
+The CLI reads a local JSON file and an explicit event request. A synchronous library evaluates the supplied evidence and returns a report. The report depends on its inputs and documented policy, including any booking reference date. System time, network services and terminal state are outside the core.
 
 ```mermaid
 flowchart LR
@@ -33,12 +33,14 @@ These are responsibilities. Add physical modules when the implementation needs t
 
 ## Evidence, eligibility and ranking
 
+The [product decision record](requirements.md#proposed-product-decisions) owns the proposed policy and test cases. Human approval is pending.
+
 - Retain the difference between a known fact, missing evidence, invalid evidence and a conflict. Preserve qualifications such as room layout, estimate ranges, access scope, date exceptions and quote basis. Record IDs, field paths and supporting notes where they explain a decision.
 - Keep suspected duplicates traceable to both IDs. For a confirmed duplicate, preserve source evidence for disagreeing hard fields. A conflicting or ambiguous value stays unresolved unless an approved precedence rule settles it. Where identity matters to eligibility, flag the candidate for confirmation.
-- Use `Rejected` when at least one hard criterion fails. Use `RequiresConfirmation` when none fail and one or more remain unresolved. Use `Eligible` when all pass. One eligible date can satisfy an approved set of acceptable dates only if the relevant room, booking and other hard criteria also apply to that date.
+- Evaluate all hard criteria together on each allowed date. Use the scenario verdict rules in PD-007 to combine passing, unresolved and failed dates.
 - Proposed budget comparison uses checked arithmetic and a compatible currency and price basis. Account for the agreed minimum-spend rule, applicable VAT and required extras. A known lower bound above a firm cap can establish failure. An incomplete quote within the cap leaves the total unresolved.
-- Rank only eligible candidates in the confirmed shortlist. Use a documented order of approved factors, such as suitable Thursday dates, rail access and room or amenity fit. Use a stable source ID or canonical group ID as the final tie-break. Compare cost only where meaningful. Keep score explanations and diagnostic order stable.
-- Carry the matched date or date evidence, capacity and breakout fit, accessibility basis, budget basis and ranking factors into the report. Include an empty-result summary with rejection and confirmation counts and representative reasons. A separately labelled confirmation list is a product option.
+- Rank only eligible candidates in the confirmed shortlist. Apply the approved preference order and stable ID tie-break from PD-007. Keep explanations and diagnostic order stable.
+- Carry the matched date or date evidence, capacity and breakout fit, accessibility basis, budget basis and ranking factors into the report. Include an empty-result summary with rejection and confirmation counts and representative reasons. The proposed report includes a separately labelled confirmation list.
 
 ## Dependencies
 

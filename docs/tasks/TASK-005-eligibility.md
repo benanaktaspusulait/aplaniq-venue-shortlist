@@ -30,7 +30,9 @@ Preference scoring, CLI formatting, unsupported price conversion, booking and in
 
 ## Implementation guidance
 
-A hard failure takes precedence over an unresolved criterion. A pass requires evidence under the agreed policy. Evaluate date-dependent criteria together on at least one permitted date. Make the reference date explicit for lead time. Keep an incomplete estimate unresolved when it cannot prove a pass. A proven lower bound can reject if already above a firm cap.
+See the [requirements and acceptance matrix](../requirements.md).
+
+Apply PD-001–007 and AC-03–10 after approval. Evaluate all hard criteria together for each allowed date. A hard failure rules out that date and a date-independent failure rules out all dates. Make the reference date explicit for lead time. Keep an incomplete estimate unresolved when it cannot prove a pass. A proven lower bound can reject if already above a firm cap.
 
 ## Acceptance criteria
 

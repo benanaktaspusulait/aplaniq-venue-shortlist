@@ -30,6 +30,8 @@ Deciding if evidence satisfies an event, choosing a duplicate winner, live venue
 
 ## Implementation guidance
 
+See the [requirements and acceptance matrix](../requirements.md).
+
 Use `serde_json` with a tolerant record boundary. Prefer explicit supported patterns and an unresolved fallback for unfamiliar text. Preserve amount precision before converting to minor units. Retain VAT, currency, estimate, minimum spend and rate basis. Preserve general access claims and room-level limitations. Parse dates and exceptions as evidence. Carry notes if they qualify structured fields.
 
 ## Acceptance criteria
@@ -52,7 +54,7 @@ The ingestion contract and representative dataset formats have passing tests and
 
 ## Risks and unresolved assumptions
 
-The grouped amount and implied years depend on explicit interpretation. Prioritise audited patterns. Unsupported text can be reported for confirmation.
+Use the approved interpretations of grouped amounts and implied years. See AC-01–03 and AC-05–09. Prioritise audited patterns. Unsupported text can be reported for confirmation.
 
 ## Estimated effort
 

@@ -30,7 +30,9 @@ Replacing component tests, large snapshot baselines, benchmark infrastructure an
 
 ## Implementation guidance
 
-Use a compact fixture with eligible, rejected and unresolved cases under a stated policy. Assert meaningful outcomes and reasons. Repeat the exact documented CLI invocation against the export. Check one plausible inclusion or exclusion manually against the input and selected product policy.
+See the [requirements and acceptance matrix](../requirements.md).
+
+Use the positive fixture from AC-01 and add rejected and unresolved cases under the approved policy. Use the acceptance matrix to select integration coverage. Assert meaningful outcomes and reasons. Repeat the exact documented CLI invocation against the export. Check one plausible inclusion or exclusion manually against the input and selected product policy.
 
 ## Acceptance criteria
 

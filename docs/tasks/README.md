@@ -1,12 +1,12 @@
 # AplanIQ Venue Shortlist implementation backlog
 
-This is the Phase 2 handoff to Claude Code. It is based on both pages of the original assessment, the supplied `venues.json` and the Phase 1 [requirements](../requirements.md), [architecture](../architecture.md) and [data audit](../data-analysis.md). All tasks are to do at handoff. TASK-001 builds on the existing requirements and audit. The remaining product decisions and the implementation are pending.
+This is the Phase 2 handoff to Claude Code. It is based on both pages of the original assessment, the supplied `venues.json` and the Phase 1 [requirements](../requirements.md), [architecture](../architecture.md) and [data audit](../data-analysis.md). TASK-001 is ready for human review. Product decisions await approval. TASK-002–010 remain to do.
 
 ## Backlog and execution order
 
 | Task | Deliverable | Direct dependencies | Estimate |
 | --- | --- | --- | --- |
-| [TASK-001](TASK-001-requirements.md) | Requirements, product decisions and reference event scenario | None | 12 min |
+| [TASK-001](TASK-001-requirements.md) | Requirements, product decisions and reference event scenario | None | 12 min original estimate |
 | [TASK-002](TASK-002-domain-model.md) | Rust domain, evidence, error and report types | 001 | 8 min |
 | [TASK-003](TASK-003-normalisation.md) | JSON ingestion and normalisation of observed shapes | 002 | 30 min |
 | [TASK-004](TASK-004-deduplication.md) | Conservative duplicate handling and conflicting evidence | 003 | 10 min |
@@ -50,10 +50,7 @@ Follow numerical order for completed deliverables. Once TASK-001 defines the sce
 
 ## Open decisions and delivery risks
 
-- Decide 80 vs 120, plenary setup, three vs four usable breakouts, exact date window and hours, and the lead-time reference. March 2027 is a working inference from the dated export.
-- Decide whether €15,000 is a binding cap and whether catering, VAT and required extras count. Specify the treatment of incomplete quotes, minimum spends and incompatible currency.
-- Decide whether venue-level accessibility claims are sufficient and which routes and facilities must be verified. Decide which transport thresholds and amenity evidence are hard criteria.
-- Decide score priorities, maximum result count, handling of possible duplicates and whether unresolved venues can appear as a labelled follow-up. The export lacks complete dates, prices and room-level accessibility for some venues. Where the selected policy produces an empty confirmed list, explain it and demonstrate ranking with a controlled fixture.
+- Review [PD-001–007 and AC-01–14](../requirements.md). Approval of the reference scenario and its evidence policy gates TASK-002. The export lacks complete dates, prices and room-level access evidence. Use a controlled fixture to demonstrate ranking if the approved policy yields an empty confirmed list.
 - Verify Claude Code is available at implementation kickoff. It was not found on the shell PATH during planning. The repository had no existing GSD planning directory. The final push and sharing are a separate external milestone and are outside this planning run.
 
 ## Boundaries and time budget
@@ -62,7 +59,7 @@ TASK-003 parses evidence, TASK-004 handles identity and conflicts, TASK-005 deci
 
 The tasks cover the assessment without a separate dependency-selection milestone, duplicate testing project or infrastructure work. The gaps are product policy, the executable feature, genuine Claude Code planning artifacts, verified review and authorised delivery.
 
-The active-work estimate is **141 minutes**, including **109 minutes** for TASK-002–008 implementation and validation. The first recorded Phase 1 check through final verification took **3 minutes 59 seconds**. Count Phase 2 and any human time against the same 180-minute cap. See the [assessment log](../assessment-log.md) for measured intervals. Protect the last 20 minutes for review and final verification, already included in the 141-minute estimate. If pressure increases, reduce parser breadth for undocumented formats, cosmetic output work and optional follow-up display. Protect the working command, hard filters, ranked results, focused tests and honest notes. At the limit, stop and record what remains.
+The original active-work estimate is **141 minutes**, including **109 minutes** for TASK-002–008 implementation and validation. TASK-002–010 total 129 minutes, with human review of TASK-001 still pending. The first recorded Phase 1 check through final verification took **3 minutes 59 seconds**. Count Phase 2, TASK-001 and any other assessment work against the same 180-minute cap. See the [assessment log](../assessment-log.md) for measured intervals. Protect the last 20 minutes for review and final verification, already included in the 141-minute estimate. If pressure increases, reduce parser breadth for undocumented formats, cosmetic output work and optional follow-up display. Protect the working command, hard filters, ranked results, focused tests and honest notes. At the limit, stop and record what remains.
 
 ## Claude Code and GSD workflow
 

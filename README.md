@@ -6,7 +6,7 @@ A local Rust CLI planned for finding and explaining venues that meet an event's 
 
 The Cargo package and executable are named `venue-shortlist`. The library crate is `venue_shortlist`. The original [venue dataset](venues.json) is included. The executable is a scaffold that prints a status message to stderr and exits with status 1. Business implementation is reserved for Claude Code.
 
-Phase 2 added the implementation backlog. The first open task is to resolve the product decisions for the reference event.
+Phase 2 added the implementation backlog. The reference event and proposed product decisions are ready for human review in TASK-001. TASK-002 awaits approval.
 
 ## Development
 
