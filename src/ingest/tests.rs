@@ -1,3 +1,5 @@
+use std::num::NonZeroU32;
+
 use chrono::{NaiveDate, Weekday};
 
 use crate::domain::{
@@ -5,7 +7,7 @@ use crate::domain::{
     SeatingLayout, VatStatus, WalkTime,
 };
 
-use super::*;
+use super::{Diagnostic, DiagnosticKind, Ingestion, InputError, load_venues, parse_venues};
 
 const YEAR: Option<i32> = Some(2027);
 
@@ -44,6 +46,7 @@ fn document_errors_distinguish_read_syntax_and_envelope() {
         load_venues("venues.json/nonexistent.json", YEAR),
         Err(InputError::Read { .. })
     ));
+    assert!(matches!(parse_venues("", YEAR), Err(InputError::Json(_))));
     let error = parse_venues("{\n invalid", YEAR).unwrap_err();
     assert!(matches!(error, InputError::Json(_)));
     assert!(error.to_string().contains("line 2"));
@@ -55,7 +58,7 @@ fn document_errors_distinguish_read_syntax_and_envelope() {
     }
     let empty = parse_venues(r#"{"venues":[]}"#, YEAR).unwrap();
     assert_eq!(empty.source_record_count, 0);
-    assert!(empty.venues.is_empty());
+    assert_eq!(empty.venues, []);
 }
 
 #[test]
@@ -114,12 +117,12 @@ fn capacity_distinguishes_ranges_layouts_and_standing_only() {
         assert_eq!(capacity.seated[0].layout, layout);
         assert_eq!(capacity.seated[0].bounds().minimum(), lower);
         assert_eq!(capacity.seated[0].bounds().maximum(), upper);
-        assert_eq!(capacity.standing.map(|n| n.get()), standing);
+        assert_eq!(capacity.standing.map(NonZeroU32::get), standing);
     }
     let report = parse_row(r#""capacity":"130 standing""#);
     let capacity = known(&report.venues[0].capacity);
-    assert!(capacity.seated.is_empty());
-    assert_eq!(capacity.standing.map(|n| n.get()), Some(130));
+    assert_eq!(capacity.seated, []);
+    assert_eq!(capacity.standing.map(NonZeroU32::get), Some(130));
 
     let report = parse_row(r#""capacity":{"plenary_cabaret":90,"plenary_theatre":140}"#);
     let seats = &known(&report.venues[0].capacity).seated;
@@ -199,13 +202,13 @@ fn object_quotes_and_dutch_part_day_quotes_use_minor_units() {
         ),
         (
             r#"{"amount":9800,"type":"per_day","currency":"EUR","vat":"excl"}"#,
-            980000,
+            980_000,
             PriceBasis::PerDay,
             VatStatus::Excluded,
         ),
         (
             r#""€4.200 per dagdeel ex. BTW""#,
-            420000,
+            420_000,
             PriceBasis::PerPartDay,
             VatStatus::Excluded,
         ),
@@ -377,7 +380,7 @@ fn availability_preserves_specific_exceptions_before_broad_rules() {
         NaiveDate::from_ymd_opt(2027, 3, 11).unwrap()
     );
     assert_eq!(schedule.rules[2].status, DateStatus::Unavailable);
-    assert!(report.diagnostics.is_empty());
+    assert_eq!(report.diagnostics, []);
 }
 
 #[test]

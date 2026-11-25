@@ -67,27 +67,7 @@ fn parse(
         ));
     }
     if label.contains(';') || has_numbered_weekday(label) {
-        for block in label.split(';') {
-            let (before, after) = block
-                .trim()
-                .split_once("march")
-                .ok_or((Unsupported, "expected March in each dated weekday block"))?;
-            let (year, remainder) = march_year(after, assumed_year, inferred)?;
-            if !remainder.is_empty() {
-                return Err((Unsupported, "unrecognised dated weekday suffix"));
-            }
-            let (day_label, days) = before
-                .trim()
-                .split_once(' ')
-                .ok_or((Invalid, "expected a weekday and dates"))?;
-            let day = weekday(day_label).ok_or((Unsupported, "unrecognised weekday"))?;
-            for date in march_dates(year, days)? {
-                if date.weekday() != day {
-                    return Err((Invalid, "listed date does not match its weekday"));
-                }
-                result.rules.push(exact(date, Available)?);
-            }
-        }
+        result.rules = parse_dated_weekdays(label, assumed_year, inferred)?;
         return Ok(result);
     }
 
@@ -99,37 +79,7 @@ fn parse(
     let end = date(year, 3, 31)?;
 
     if before.trim().is_empty() {
-        let details = remainder
-            .strip_prefix(':')
-            .map(str::trim)
-            .ok_or((Unsupported, "expected a restriction after March"))?;
-        if let Some(except) = details.strip_prefix("fully booked except ") {
-            for date in except_dates(year, except)? {
-                result.rules.push(exact(date, Available)?);
-            }
-            result.rules.push(rule(start, end, None, Unavailable)?);
-            return Ok(result);
-        }
-        let (pattern, exceptions) = details
-            .split_once(", except ")
-            .ok_or((Unsupported, "unrecognised March restriction"))?;
-        let days = pattern
-            .strip_suffix(" only")
-            .and_then(weekday_pattern)
-            .ok_or((Unsupported, "unrecognised March weekday restriction"))?;
-        for date in except_dates(year, exceptions)? {
-            result.rules.push(exact(date, Unavailable)?);
-        }
-        let other_days = WEEKDAYS
-            .into_iter()
-            .filter(|day| !days.contains(day))
-            .collect();
-        result
-            .rules
-            .push(rule(start, end, Some(days.to_vec()), Available)?);
-        result
-            .rules
-            .push(rule(start, end, Some(other_days), Unavailable)?);
+        result.rules = parse_march_restriction(remainder, year, start, end)?;
         return Ok(result);
     }
 
@@ -172,6 +122,73 @@ fn parse(
             .push(rule(start, end, Some(other_days), Unavailable)?);
     }
     Ok(result)
+}
+
+fn parse_march_restriction(
+    remainder: &str,
+    year: i32,
+    start: NaiveDate,
+    end: NaiveDate,
+) -> Result<Vec<AvailabilityRule>, Issue> {
+    let mut rules = Vec::new();
+    let details = remainder
+        .strip_prefix(':')
+        .map(str::trim)
+        .ok_or((Unsupported, "expected a restriction after March"))?;
+    if let Some(except) = details.strip_prefix("fully booked except ") {
+        for date in except_dates(year, except)? {
+            rules.push(exact(date, Available)?);
+        }
+        rules.push(rule(start, end, None, Unavailable)?);
+        return Ok(rules);
+    }
+    let (pattern, exceptions) = details
+        .split_once(", except ")
+        .ok_or((Unsupported, "unrecognised March restriction"))?;
+    let days = pattern
+        .strip_suffix(" only")
+        .and_then(weekday_pattern)
+        .ok_or((Unsupported, "unrecognised March weekday restriction"))?;
+    for date in except_dates(year, exceptions)? {
+        rules.push(exact(date, Unavailable)?);
+    }
+    let other_days = WEEKDAYS
+        .into_iter()
+        .filter(|day| !days.contains(day))
+        .collect();
+    rules.push(rule(start, end, Some(days.to_vec()), Available)?);
+    rules.push(rule(start, end, Some(other_days), Unavailable)?);
+    Ok(rules)
+}
+
+fn parse_dated_weekdays(
+    label: &str,
+    assumed_year: Option<i32>,
+    inferred: &mut bool,
+) -> Result<Vec<AvailabilityRule>, Issue> {
+    let mut rules = Vec::new();
+    for block in label.split(';') {
+        let (before, after) = block
+            .trim()
+            .split_once("march")
+            .ok_or((Unsupported, "expected March in each dated weekday block"))?;
+        let (year, remainder) = march_year(after, assumed_year, inferred)?;
+        if !remainder.is_empty() {
+            return Err((Unsupported, "unrecognised dated weekday suffix"));
+        }
+        let (day_label, days) = before
+            .trim()
+            .split_once(' ')
+            .ok_or((Invalid, "expected a weekday and dates"))?;
+        let day = weekday(day_label).ok_or((Unsupported, "unrecognised weekday"))?;
+        for date in march_dates(year, days)? {
+            if date.weekday() != day {
+                return Err((Invalid, "listed date does not match its weekday"));
+            }
+            rules.push(exact(date, Available)?);
+        }
+    }
+    Ok(rules)
 }
 
 fn march_year<'a>(

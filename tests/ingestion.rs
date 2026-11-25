@@ -1,3 +1,5 @@
+//! Public ingestion checks against the original venue export.
+
 use std::path::Path;
 
 use chrono::{NaiveDate, Weekday};
@@ -5,7 +7,7 @@ use serde_json::Value;
 use venue_shortlist::{
     domain::{
         Accessibility, CateringStatus, Currency, Evidence, MinorUnits, PriceBasis, Quality,
-        VatStatus,
+        VatStatus, VenueId,
     },
     ingest::{DiagnosticKind, load_venues},
 };
@@ -33,18 +35,18 @@ fn original_export_accounts_for_every_source_row_and_preserves_evidence() {
     {
         seen[source.record_index] += 1;
         assert_eq!(
-            source.venue_id.as_ref().map(|id| id.as_str()),
+            source.venue_id.as_ref().map(VenueId::as_str),
             rows[source.record_index]["id"].as_str()
         );
     }
     assert_eq!(report.source_record_count, 30);
     assert_eq!(report.venues.len(), 30);
-    assert!(report.rejected_records.is_empty());
+    assert_eq!(report.rejected_records, []);
     assert!(seen.into_iter().all(|count| count == 1));
     for diagnostic in &report.diagnostics {
         let row = &rows[diagnostic.source.record_index];
         assert_eq!(
-            diagnostic.source.venue_id.as_ref().map(|id| id.as_str()),
+            diagnostic.source.venue_id.as_ref().map(VenueId::as_str),
             row["id"].as_str()
         );
         let mut raw = row;

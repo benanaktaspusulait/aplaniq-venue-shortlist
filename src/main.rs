@@ -1,4 +1,4 @@
-#![forbid(unsafe_code)]
+//! CLI entry point.
 
 use std::process::ExitCode;
 

@@ -2,9 +2,25 @@
 name = "venue-shortlist"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.85.0"
 publish = false
 
 [dependencies]
 chrono = { version = "0.4", default-features = false }
 serde_json = { version = "1.0.154", features = ["arbitrary_precision"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+unsafe_op_in_unsafe_fn = "deny"
+unused_must_use = "deny"
+missing_docs = "warn"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+dbg_macro = "deny"
+todo = "deny"
+unimplemented = "deny"
