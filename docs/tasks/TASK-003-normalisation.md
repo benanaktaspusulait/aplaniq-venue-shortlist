@@ -54,7 +54,7 @@ The ingestion contract and representative dataset formats have passing tests and
 
 ## Risks and unresolved assumptions
 
-Use the approved interpretations of grouped amounts and implied years. See AC-01–03 and AC-05–09. Prioritise audited patterns. Unsupported text can be reported for confirmation.
+Use the approved interpretations of grouped amounts and implied years. See AC-01–03, AC-05–09 and AC-15. Preserve v019’s whole-number capacity, per-person VAT-inclusive catering quote, positive access flag, daylight, fiber and station walk. Prioritise audited patterns. Unsupported text can be reported for confirmation.
 
 ## Estimated effort
 

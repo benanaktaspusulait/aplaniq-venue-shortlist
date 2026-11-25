@@ -32,7 +32,7 @@ Re-evaluating hard criteria, personalised or learned scores, CLI presentation an
 
 See the [requirements and acceptance matrix](../requirements.md).
 
-Apply the approved ordering in PD-007 and verify AC-11–12. The proposal uses ordered factors and a separate confirmation list. Use a stable source or group ID as the final key. Carry relevant evidence through to the report.
+Apply the approved ordering in PD-007 and verify AC-11–12. The working policy uses ordered factors including comparable budget headroom and expansion fit, with a separate confirmation list. Use a stable source or group ID as the final key. Carry relevant evidence through to the report.
 
 ## Acceptance criteria
 

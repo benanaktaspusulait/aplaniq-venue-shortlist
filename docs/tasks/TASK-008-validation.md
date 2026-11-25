@@ -32,7 +32,7 @@ Replacing component tests, large snapshot baselines, benchmark infrastructure an
 
 See the [requirements and acceptance matrix](../requirements.md).
 
-Use the positive fixture from AC-01 and add rejected and unresolved cases under the approved policy. Use the acceptance matrix to select integration coverage. Assert meaningful outcomes and reasons. Repeat the exact documented CLI invocation against the export. Check one plausible inclusion or exclusion manually against the input and selected product policy.
+Use the positive fixture from AC-01 and add rejected and unresolved cases under the candidate-approved policy. Verify the v019 regression (AC-15) and a synthetic clone of its evidence with a different ID. Use the acceptance matrix to select integration coverage. Assert meaningful outcomes and reasons. Repeat the exact documented CLI invocation against the export. Check one plausible inclusion or exclusion manually against the input and selected product policy.
 
 ## Acceptance criteria
 

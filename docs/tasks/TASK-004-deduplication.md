@@ -32,7 +32,7 @@ Fuzzy matching infrastructure, geocoding, external searches and filling facts fr
 
 See the [requirements and acceptance matrix](../requirements.md).
 
-Use evidence such as known name variants, location and station aliases with small deterministic comparisons. Check that room or building qualifiers can denote distinct inventory. Preserve source-specific evidence and expose disagreements for hard fields. Document any dataset-specific identity override and its basis.
+Use evidence such as known name variants, location and station aliases with small deterministic comparisons. Check that room or building qualifiers can denote distinct inventory. Preserve source-specific evidence and expose disagreements for hard fields. An omitted field must not erase adverse evidence. Similar names alone cannot prove the same event space. Document any dataset-specific identity override and its basis.
 
 ## Acceptance criteria
 

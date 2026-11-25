@@ -37,3 +37,8 @@ This work was local. No client questions were sent and no repository was pushed 
 - Verified the March 2027 weekday set, representative venue evidence, task traceability and Markdown links. The first A4 render of `NOTES.md` clipped the decision table. Replaced the table with short bullets and verified that the resulting one-page A4 render was legible. The four Cargo scaffold checks passed, with zero tests. Confirmed that the Rust tree and original dataset bytes were unchanged.
 - The first repository check was at 19:29:55 GMT. The specification commit was made at 19:33:08 GMT, an observed interval of 3 minutes 13 seconds excluding this log commit. Record actual implementation time separately within the 180-minute assessment cap.
 - TASK-001 is ready for human review. PD-001–007 await approval and TASK-002 has not started. The pre-existing staged `.gitignore` was preserved. No client message was sent and no push or sharing occurred.
+
+## 25 November 2026, policy revision before TASK-002
+
+- The candidate revised PD-001–007 to distinguish preliminary shortlist eligibility from booking readiness. The documented access flag and public transport evidence can support provisional eligibility. The revised policy rejects explicitly unacceptable light or Wi-Fi and adds the v019 80/120 regression. These are candidate-approved working assumptions. No client questions were sent or answered.
+- Installed Claude Code 2.1.332 in a temporary directory and ran its authentication check. It reported no signed-in account. The candidate then explicitly directed Codex to implement the tasks. No Claude Code model session ran. Using Codex for implementation deviates from the assessment PDF’s Claude Code requirement. No GSD artifacts were generated.

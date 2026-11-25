@@ -4,9 +4,9 @@ A local Rust CLI planned for finding and explaining venues that meet an event's 
 
 ## Project status
 
-The Cargo package and executable are named `venue-shortlist`. The library crate is `venue_shortlist`. The original [venue dataset](venues.json) is included. The executable is a scaffold that prints a status message to stderr and exits with status 1. Business implementation is reserved for Claude Code.
+The Cargo package and executable are named `venue-shortlist`. The library crate is `venue_shortlist`. The original [venue dataset](venues.json) is included. The executable is a scaffold that prints a status message to stderr and exits with status 1. The assessment requires Claude Code. The candidate directed this workspace to use Codex, and the deviation is recorded in the assessment log.
 
-Phase 2 added the implementation backlog. The reference event and proposed product decisions are ready for human review in TASK-001. TASK-002 awaits approval.
+Phase 2 added the implementation backlog. The candidate-approved planning assumptions are recorded in TASK-001. TASK-002 covers the typed Rust domain. Shortlist eligibility is preliminary and the dataset is unverified.
 
 ## Development
 

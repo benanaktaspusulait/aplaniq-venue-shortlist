@@ -33,14 +33,14 @@ These are responsibilities. Add physical modules when the implementation needs t
 
 ## Evidence, eligibility and ranking
 
-The [product decision record](requirements.md#proposed-product-decisions) owns the proposed policy and test cases. Human approval is pending.
+The [product decision record](requirements.md#working-product-decisions) owns the candidate-approved policy and acceptance cases. The unverified export supports preliminary shortlist eligibility. Route, toilet, quote and slot verification belong to booking readiness.
 
 - Retain the difference between a known fact, missing evidence, invalid evidence and a conflict. Preserve qualifications such as room layout, estimate ranges, access scope, date exceptions and quote basis. Record IDs, field paths and supporting notes where they explain a decision.
 - Keep suspected duplicates traceable to both IDs. For a confirmed duplicate, preserve source evidence for disagreeing hard fields. A conflicting or ambiguous value stays unresolved unless an approved precedence rule settles it. Where identity matters to eligibility, flag the candidate for confirmation.
 - Evaluate all hard criteria together on each allowed date. Use the scenario verdict rules in PD-007 to combine passing, unresolved and failed dates.
-- Proposed budget comparison uses checked arithmetic and a compatible currency and price basis. Account for the agreed minimum-spend rule, applicable VAT and required extras. A known lower bound above a firm cap can establish failure. An incomplete quote within the cap leaves the total unresolved.
-- Rank only eligible candidates in the confirmed shortlist. Apply the approved preference order and stable ID tie-break from PD-007. Keep explanations and diagnostic order stable.
-- Carry the matched date or date evidence, capacity and breakout fit, accessibility basis, budget basis and ranking factors into the report. Include an empty-result summary with rejection and confirmation counts and representative reasons. The proposed report includes a separately labelled confirmation list.
+- Compare compatible price evidence using checked minor-unit arithmetic. Preserve quoted amounts, known minimum costs, estimates and unknowns. Apply PD-002 independently at 80 and 120.
+- Rank only eligible candidates in the preliminary shortlist. Apply PD-007, including the travel heuristic, quality evidence, comparable budget headroom, expansion verdict and stable ID tie-break. Explicit unacceptable light or Wi-Fi is an eligibility failure. Keep explanations and diagnostic order stable.
+- Carry the matched date or date evidence, capacity and breakout fit, accessibility basis, budget basis and ranking factors into the report. Include an empty-result summary with rejection and confirmation counts and representative reasons. The report includes a separately labelled confirmation list and the evidence behind the 120-person expansion verdict.
 
 ## Dependencies
 
@@ -64,10 +64,10 @@ Phase 1 uses the standard library. Add dependencies when a feature uses them and
 | Capacity and breakouts | Integers, v002's range, v004's layout-specific object, v017's seated versus standing text, v027's invalid zero, qualified and ranged breakout counts. Verify boundary cases for 80 and 120 and for three or four rooms under the agreed policy. |
 | Pricing and budget | Per-day, per-person decimal, part-day text, grouped strings, on-request and null prices, minimum spend, EUR versus USD, inclusive and exclusive VAT, mandatory catering. Verify exact-cap, over-cap and incomplete total scenarios using the approved rounding and inclusion rules. |
 | Duplicates and conflicts | Use the three observed pairs and a similar-name negative case. Retain both source IDs, distinguish a possible distinct room from a proven match, and verify that conflicts cannot create eligibility by merging stronger claims. |
-| Accessibility | Cover true, false, ground-floor-only, room-specific exclusion, undefined upper-floor access and unknown. Evaluate against the required spaces rather than a venue-wide boolean alone. |
+| Accessibility | A positive flag with no contrary evidence supports preliminary eligibility. Cover known inaccessible required rooms, partial, conflicting, missing and unknown states, and carry access verification to booking. |
 | Dates | Cover exact dates, weekday patterns, omitted years, the March 18 exception, booking lead time, an explicit closure and an unknown answer. Verify Thursday preference when Tuesday also satisfies the accepted window. |
 | Hard requirements | A failed hard rule overrides an otherwise excellent fit and any unresolved rule. An unknown hard requirement cannot enter the confirmed shortlist. Verify an empty shortlist and confirmed/follow-up counts. |
-| Ranking and output | Exercise ties, repeat calls and permuted records with stable IDs. A small end-to-end fixture verifies report order, reasons, source IDs, warnings, stdout/stderr and exit status. Run the final documented command against the original dataset as a smoke check. |
+| Ranking and output | Exercise ties, repeat calls and permuted records with stable IDs. A small end-to-end fixture verifies report order, reasons, source IDs, warnings, stdout/stderr and exit status. Run the final documented command against the original dataset, including the v019 80/120 regression and equivalent synthetic evidence (AC-15). |
 
 ## Proposed implementation sequence
 

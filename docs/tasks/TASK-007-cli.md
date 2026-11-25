@@ -38,7 +38,7 @@ Keep path and argument handling in the binary. Use the standard library for a si
 
 - Given the original export and documented command, the binary exits successfully and prints a readable ranked shortlist or an explained empty result.
 - Given an invalid input path or malformed document, the CLI exits non-zero with actionable stderr and no partial report on stdout.
-- Given a typed report with an unresolved candidate, render it in follow-up under the proposed policy and label its unresolved evidence. See AC-12–13.
+- Given a typed report with an unresolved candidate, render it in follow-up and label its unresolved evidence. Explain expansion limitations and distinguish preliminary suitability from booking checks. See AC-12–13.
 
 ## Required tests and edge cases
 

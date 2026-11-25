@@ -2,7 +2,7 @@
 
 ## Status
 
-Ready for human review. PD-001–007 are proposed. Approval is pending and TASK-002 has not started.
+Complete. The candidate reviewed and approved PD-001–007 as working assumptions. Client confirmation remains open.
 
 ## Objective
 
@@ -18,7 +18,7 @@ None. Read the assessment PDF and the [requirements](../requirements.md) and [da
 
 ## Requirements and scope
 
-Confirmed inputs are the client's stated needs and preferences and the assessment's shortlist deliverable. The [requirements](../requirements.md) hold the reference scenario, decision record and acceptance criteria. Resolve the pending policy choices there before releasing TASK-002.
+Confirmed inputs are the client's stated needs and preferences and the assessment's shortlist deliverable. The [requirements](../requirements.md) hold the reference scenario, decision record and acceptance criteria. The revised policies distinguish preliminary shortlist eligibility from booking readiness.
 
 ## Explicitly out of scope
 
@@ -30,7 +30,7 @@ Rust implementation, venue verification, booking and contacting the client durin
 
 ## Implementation guidance
 
-Review the three draft questions and PD-001–007. Track client answers separately from human-approved engineering assumptions. Freeze the reference request and minimum CLI inputs after approval.
+Use the revised PD-001–007 for implementation. Attribute any later client answers separately. The three draft questions remain unsent.
 
 ## Acceptance criteria
 
@@ -40,7 +40,7 @@ Review the three draft questions and PD-001–007. Track client answers separate
 
 ## Required tests and edge cases
 
-Review AC-01–14 in the requirements. Verify the fixture assumptions and expected outcomes before sending the task to Claude Code.
+Use AC-01–15 in the requirements, including the v019 regression at 80 and 120.
 
 ## Validation commands
 
@@ -48,11 +48,11 @@ Review AC-01–14 in the requirements. Verify the fixture assumptions and expect
 
 ## Definition of done
 
-The draft is ready for review with a single baseline and testable proposals. Mark the task complete and unblock TASK-002 only after the human approves or revises the policy and the final decisions are recorded.
+The candidate reviewed the baseline and adopted the revised working policies. The requirements record the assumptions and acceptance cases, enabling TASK-002.
 
 ## Risks and unresolved assumptions
 
-Headcount, dates and hours, interpretation of the cap, travel threshold and required accessible facilities are open. Strict interpretation of the available evidence may yield an empty confirmed shortlist.
+The decisions are working assumptions. Final headcount, dates and hours, cost scope and booking-level access still require verification.
 
 ## Estimated effort
 

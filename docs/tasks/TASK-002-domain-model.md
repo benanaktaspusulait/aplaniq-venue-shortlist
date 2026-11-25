@@ -18,7 +18,7 @@ Explicit types keep unavailable information, negative evidence, incomplete quote
 
 ## Requirements and scope
 
-Define a typed event request, source references, venue evidence and outcome/report data needed by the first use cases. Cover capacity by setup, price basis and currency, date evidence, accessibility scope and recoverable diagnostics. Keep the library independent of terminal I/O and clock state.
+Define a typed event request, source references, venue evidence and outcome/report data needed by the first use cases. Cover capacity by setup, price basis and currency, date evidence, accessibility scope and recoverable diagnostics. Keep the library independent of terminal I/O, JSON and clock state. Use the [candidate-approved policies](../requirements.md#working-product-decisions) as the boundary for evidence types.
 
 ## Explicitly out of scope
 
@@ -30,7 +30,7 @@ Parsing venue values, evaluating policy, scoring, CLI message wording and a gene
 
 ## Implementation guidance
 
-Start with the smallest types used by the next task. Represent unavailable, invalid and conflicting evidence explicitly. Carry source IDs and JSON field paths where needed. Separate fatal input errors from recoverable record diagnostics. Use standard error traits first. Confirm dependency and compiler compatibility when a consuming task adds a crate, and document changes to supported Rust versions.
+Start with typed event and venue data, source references, evidence needed by the next task, and an outcome with structured reasons. Represent money in integer minor units and preserve currency and price basis. Model preliminary positive access separately from limited, adverse and unknown evidence. Use validated positive seated counts and distinguish invalid input from missing evidence. Keep parser errors in the ingestion task. Defer serde, serde_json, chrono, clap and rust_decimal unless this task uses them. Use standard error traits when needed.
 
 ## Acceptance criteria
 
@@ -44,7 +44,7 @@ Test invariants introduced by constructors, such as invalid ranges or negative m
 
 ## Validation commands
 
-`cargo fmt --all -- --check`, `cargo test --lib`, `cargo check`.
+`cargo fmt --all -- --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test` and `cargo check`.
 
 ## Definition of done
 
@@ -52,7 +52,7 @@ The model compiles, has any needed invariant tests, and supports representative 
 
 ## Risks and unresolved assumptions
 
-Availability detail, exact money representation and report scope depend on TASK-001. Prefer extending a type alongside its first real use.
+Keep dates, booking restrictions and rich evidence proportional to TASK-003 input needs. Prefer extending a type alongside its first real use.
 
 ## Estimated effort
 

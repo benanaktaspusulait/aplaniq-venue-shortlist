@@ -18,7 +18,7 @@ The assessor must be able to run the feature, audit the agent workflow and under
 
 ## Requirements and scope
 
-Confirm the one-command README and final checks. Keep `NOTES.md` at two pages maximum with Spec and assumptions, Product decisions and Review. Include at least three decisions, the observed review and strongest diff, manual fixes if any, time spent and what is next at the time limit. Include genuine Claude Code planning artifacts and honest commit history. The eventual external deliverable is a private Git repository link shared with Joa.
+Confirm the one-command README and final checks. Keep `NOTES.md` at two pages maximum with Spec and assumptions, Product decisions and Review. Include at least three decisions, the observed review and strongest diff, manual fixes if any, time spent and what is next at the time limit. Include genuine planning artifacts and honest commit history. Disclose the deviation from the PDF’s Claude Code requirement. The eventual external deliverable is a private Git repository link shared with Joa.
 
 ## Explicitly out of scope
 
@@ -26,7 +26,7 @@ Deployment, public repository, invented agent history and any push or external s
 
 ## Expected files and modules
 
-`README.md`, `NOTES.md`, `docs/assessment-log.md` and planning artifacts actually produced by Claude Code or its selected harness.
+`README.md`, `NOTES.md`, `docs/assessment-log.md` and planning artifacts actually produced by the selected agent workflow.
 
 ## Implementation guidance
 
@@ -35,7 +35,7 @@ Verify content from the tracked files and run the documented command in a clean 
 ## Acceptance criteria
 
 - README has one working command and `cargo test` passes. The final log contains actual check results and approximate elapsed time.
-- NOTES has the required three sections, fits within two pages, and records the selected decisions and actual review. The tracked tree contains the genuine agent planning artifacts used for implementation.
+- NOTES has the required three sections, fits within two pages, and records the selected decisions and actual review. The tracked tree contains the genuine agent planning artifacts used for implementation and a disclosure of the actual agent.
 - A local handoff is ready once these checks pass. The external submission milestone is satisfied only once the private link and Joa's access are verified under the user's authorisation.
 
 ## Required tests and edge cases

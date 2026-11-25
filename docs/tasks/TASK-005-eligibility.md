@@ -32,12 +32,12 @@ Preference scoring, CLI formatting, unsupported price conversion, booking and in
 
 See the [requirements and acceptance matrix](../requirements.md).
 
-Apply PD-001–007 and AC-03–10 after approval. Evaluate all hard criteria together for each allowed date. A hard failure rules out that date and a date-independent failure rules out all dates. Make the reference date explicit for lead time. Keep an incomplete estimate unresolved when it cannot prove a pass. A proven lower bound can reject if already above a firm cap.
+Apply PD-001–007, AC-03–10 and AC-15. Distinguish preliminary eligibility from booking verification. Run the same hard checks separately at 80 and 120. Evaluate all hard criteria together for each allowed date. A hard failure rules out that date and a date-independent failure rules out all dates. Make the reference date explicit for lead time. Keep an incomplete estimate unresolved when it cannot prove a pass. A proven lower bound can reject if already above a firm cap.
 
 ## Acceptance criteria
 
 - Given all hard criteria pass, return `Eligible` and supporting reasons. Given one hard failure and otherwise passing or unknown evidence, return `Rejected`. Given no failures and an unresolved hard criterion, return `RequiresConfirmation`.
-- Given a firm inclusive cap and known comparable totals at and above the cap, apply the documented boundary exactly. Unknown required charges or currency never silently establish a pass.
+- Given a firm inclusive cap and known comparable totals at and above the cap, apply the documented boundary exactly. Unknown required charges or currency never silently establish a pass. A documented positive access flag is preliminary evidence, and explicit unacceptable lighting or Wi-Fi fails.
 - Given Tuesday evidence and a conflicting Thursday offer, a candidate qualifies only if one allowed date satisfies all related hard requirements together.
 
 ## Required tests and edge cases
