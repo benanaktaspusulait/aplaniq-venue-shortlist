@@ -5,11 +5,11 @@ use std::num::NonZeroU32;
 
 use serde_json::Value;
 
+use crate::diagnostic::{Diagnostic, DiagnosticKind};
 use crate::domain::{
     Accessibility, Breakouts, Capacity, CateringStatus, CountRange, Evidence, Quality,
     SeatedCapacity, SeatingLayout, SourceRef, StationAccess, Venue, VenueId, WalkTime,
 };
-use crate::ingest::{Diagnostic, DiagnosticKind};
 
 use DiagnosticKind::{Ambiguous, Invalid, Unknown, Unsupported};
 
@@ -78,12 +78,16 @@ impl<'a, 'report> Row<'a, 'report> {
         }
     }
 
-    fn required(&mut self, field: &str, value: Option<&Value>) -> Option<String> {
+    fn required<'value>(
+        &mut self,
+        field: &str,
+        value: Option<&'value Value>,
+    ) -> Option<&'value str> {
         if let Some(text) = value
             .and_then(Value::as_str)
             .filter(|s| !s.trim().is_empty())
         {
-            return Some(text.to_owned());
+            return Some(text);
         }
         let issue = if value.is_none() {
             (
@@ -115,7 +119,9 @@ pub(super) fn normalize(
         return None;
     };
 
-    let id = row.required("id", fields.get("id")).and_then(VenueId::new);
+    let id = row
+        .required("id", fields.get("id"))
+        .and_then(|id| VenueId::new(id.to_owned()));
     let name = row.required("name", fields.get("name"));
     let (id, name) = (id?, name?);
     let notes = row.optional_text("notes", fields.get("notes"));

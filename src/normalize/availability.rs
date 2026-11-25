@@ -1,8 +1,8 @@
 use chrono::{Datelike, NaiveDate, Weekday};
 use serde_json::Value;
 
+use crate::diagnostic::DiagnosticKind;
 use crate::domain::{Availability, AvailabilityRule, DateRange, DateStatus, Evidence};
-use crate::ingest::DiagnosticKind;
 
 use super::{Ambiguous, Invalid, Issue, Row, Unknown, Unsupported, count, text};
 

@@ -8,6 +8,8 @@ use std::{
 
 use serde_json::Value;
 
+pub use crate::diagnostic::{Diagnostic, DiagnosticKind};
+
 use crate::domain::{SourceRef, Venue};
 use crate::normalize::{Row, normalize};
 
@@ -36,24 +38,6 @@ impl Error for InputError {
             Self::Envelope => None,
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DiagnosticKind {
-    MissingRequired,
-    Unknown,
-    Invalid,
-    Unsupported,
-    Ambiguous,
-    AssumedYear,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub struct Diagnostic {
-    pub source: SourceRef,
-    pub kind: DiagnosticKind,
-    pub message: &'static str,
-    pub raw: Option<String>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
