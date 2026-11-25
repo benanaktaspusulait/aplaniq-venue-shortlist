@@ -24,7 +24,7 @@ flowchart LR
 | `lib.rs` and `domain` | Coordinate the pipeline. Define the event request, venue facts, evidence states and typed report. |
 | `ingest` | Expose file loading and in-memory parsing. Reject unreadable documents, bad JSON and invalid envelopes. Account for every row and give rejected rows and recoverable field issues source references. |
 | `normalize` | Convert supported field shapes into typed capacity, price, availability, travel and accessibility evidence. Preserve raw values and source references for unresolved facts. |
-| `dedup` | Compare the known identity signals and record confidence and conflicts. Only apply an identity or precedence rule once agreed. |
+| `dedup` | Group confirmed listings from an ingestion report, retain potential-match pairs and record field disagreements with links to their source listings. |
 | `evaluate` | Evaluate each hard requirement against the request and evidence. Record pass, fail or unresolved with a reason. |
 | `rank` | Order eligible candidates using documented preferences and return the scoring factors. |
 | CLI rendering | Render reasons and warnings from the typed report. Keep formatting in the binary until its size justifies a separate module. |
@@ -41,6 +41,12 @@ The [product decision record](requirements.md#working-product-decisions) owns th
 - Compare compatible price evidence using checked minor-unit arithmetic. Preserve quoted amounts, known minimum costs, estimates and unknowns. Apply PD-002 independently at 80 and 120.
 - Rank only eligible candidates in the preliminary shortlist. Apply PD-007, including the travel heuristic, quality evidence, comparable budget headroom, expansion verdict and stable ID tie-break. Explicit unacceptable light or Wi-Fi is an eligibility failure. Keep explanations and diagnostic order stable.
 - Carry the matched date or date evidence, capacity and breakout fit, accessibility basis, budget basis and ranking factors into the report. Include an empty-result summary with rejection and confirmation counts and representative reasons. The report includes a separately labelled confirmation list and the evidence behind the 120-person expansion verdict.
+
+## Deduplication and source evidence
+
+The public deduplication function borrows the ingestion report. Confirmed identity requires a repeated export ID, the same full normalised name and a known matching city. Addresses must match when supplied. With no address, confirmation is allowed only when all listings with that ID, name and city omit the address. Different known addresses or cities rule out a match. A matching name and city across different IDs can only yield a potential match. Name variants with a shared station can also yield a potential match. Case, whitespace and dash variants are normalised while diacritics and space qualifiers remain in the full name. Potential pairs are evaluated separately and never link groups.
+
+Each entity retains whole normalised listings as configurations. Field conflicts point to two different known claims on confirmed listings. Missing or unknown information leaves both source configurations intact. Quote amount, currency, billing basis, VAT and minimum spend stay with their original quote. Downstream evaluation must assess coherent source configurations and keep adverse unresolved claims visible. Original row indices break ties for a repeated ID and remain available alongside ingestion diagnostics.
 
 ## Dependencies
 

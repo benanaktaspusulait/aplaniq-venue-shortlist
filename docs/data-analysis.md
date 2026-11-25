@@ -20,13 +20,13 @@ SHA-256 `7a943c847d7e18dd4ee00ff4b93a4335b04749e9b3c1af18db20c037fc4e3a52`.
 
 ## Potential duplicate venues
 
-| Records | Evidence for a possible match | Unresolved differences |
-| --- | --- | --- |
-| v004 and v005 | Spoorhuis names, Utrecht Centraal and short walks | 3 versus 2 minutes, 140 theatre / 90 cabaret versus 180 unspecified, four breakouts versus 4–6, explicit March weekday availability versus unknown. Only v004 supplies price, daylight and Wi-Fi. |
-| v009 and v010 | Same Hotel Domzicht base name, city, station alias and breakout count | 120 versus 110 capacity, €95 with €10,000 minimum versus €89 per person from 2025, 9 versus 10 minutes and specific dates versus ask. |
-| v023 and v024 | Moreelse name, same station, walk time, capacity and breakout count | €8,900 versus €9,400 per day and weekday availability versus ask. The event-floor label may represent a distinct inventory item. |
+| Records | Evidence for a possible match | Unresolved differences | Confidence and disposition |
+| --- | --- | --- | --- |
+| v004 and v005 | Spoorhuis names, Utrecht Centraal and short walks | 3 versus 2 minutes, 140 theatre / 90 cabaret versus 180 unspecified, four breakouts versus 4–6, and explicit March weekday availability versus unknown. Only v004 supplies price (€12,500 excluding VAT), daylight (windowless plenary) and Wi-Fi (reported complaints). | Medium for the venue name. Keep both listings until the bookable space is verified. |
+| v009 and v010 | Same Hotel Domzicht base name, city, station alias and breakout count | 120 versus 110 capacity, €95 with €10,000 minimum versus €89 per person from 2025, 9 versus 10 minutes and specific dates versus ask. | Medium for the hotel identity. Keep both until the event space and current quote are verified. |
+| v023 and v024 | Moreelse name, same city, station, walk time, capacity and breakout count | €8,900 versus €9,400 per day, weekday availability versus ask, and a partner catering estimate on v023. The source explicitly describes v024 as separately listed on the booking platform. | Low for the same bookable space. The Event Floor label may denote distinct inventory. Keep both. |
 
-No pair has a shared ID or address that proves identity. Avoid picking the most favourable values from either listing. Keep confirmed conflicts and uncertain identity visible in the report until a merge or precedence rule is approved.
+All three pairs have different source IDs. The export has no address, postal code, contact detail or authoritative event-space identifier to confirm any pair. The TASK-004 integration test reports three potential pairs involving six listings. All 30 source rows remain separate, with zero confirmed groups and zero field conflicts counted inside confirmed groups. Differences within potential pairs remain in their source listings.
 
 ## TASK-003 normalisation result
 

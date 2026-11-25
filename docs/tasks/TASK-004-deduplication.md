@@ -2,7 +2,7 @@
 
 ## Status
 
-To do.
+Complete. Implementation and self-review are recorded. Independent R2 is pending.
 
 ## Objective
 
@@ -26,13 +26,17 @@ Fuzzy matching infrastructure, geocoding, external searches and filling facts fr
 
 ## Expected files and modules
 
-`src/dedup.rs`, `src/lib.rs` and focused unit tests.
+`src/dedup.rs`, private identity and conflict modules, optional address evidence in domain and normalisation, and the integration tests in `tests/deduplication.rs`.
 
 ## Implementation guidance
 
 See the [requirements and acceptance matrix](../requirements.md).
 
 Use evidence such as known name variants, location and station aliases with small deterministic comparisons. Check that room or building qualifiers can denote distinct inventory. Preserve source-specific evidence and expose disagreements for hard fields. An omitted field must not erase adverse evidence. Similar names alone cannot prove the same event space. Document any dataset-specific identity override and its basis.
+
+## Implementation plan
+
+Use strict compatibility checks on the export ID, full normalised name, city and optional address to confirm identity within one export. Compare name variants separately for potential-match diagnostics. Keep complete source listings inside an entity and identify unresolved field disagreements between them. Verify the public ingestion-to-deduplication path against the original export and synthetic records.
 
 ## Acceptance criteria
 
@@ -54,7 +58,11 @@ Identity decisions and field conflicts are auditable in tests and downstream dat
 
 ## Risks and unresolved assumptions
 
-No supplier address proves identity for the three pairs. At R2, track the separate parser finding STD-001 in the [standards audit](../engineering/standards-audit.md#unresolved-findings). Claude Code must address repeated JSON properties at the parsing boundary before eligibility work. Deduplicating venue rows cannot recover a property already overwritten by parsing. See PD-006 and AC-10. The Moreelse event floor might be separate inventory. Conservative warnings may be the only reliable treatment.
+No supplier address proves identity for the three pairs. At R2, track the separate parser finding STD-001 in the [standards audit](../engineering/standards-audit.md#unresolved-findings). The repeated JSON property correction belongs at the parsing boundary before eligibility work. Follow the canonical governance and record actual agent usage. Deduplicating venue rows cannot recover a property already overwritten by parsing. See PD-006 and AC-10. The Moreelse event floor might be separate inventory. Conservative warnings may be the only reliable treatment.
+
+## Observed outcome
+
+The original export produced 30 normalised listings and 30 entities, with zero rejected rows, zero confirmed groups, and three unresolved identity pairs involving six listings. Confirmed groups produced zero field conflicts in this export. The candidate pairs still carry all their differences. The focused suite includes an addressless identity regression, seating and pricing configuration checks, and deterministic ordering. See the [dataset audit](../data-analysis.md#potential-duplicate-venues) and [assessment log](../assessment-log.md#25-november-2026-task-004-deduplication).
 
 ## Estimated effort
 
