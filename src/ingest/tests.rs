@@ -330,8 +330,11 @@ fn accessibility_quality_and_transport_keep_adverse_and_partial_evidence() {
         assert_eq!(venue.accessibility, expected);
         assert_eq!(venue.daylight, Evidence::Known(Quality::Unacceptable));
         assert_eq!(venue.wifi, Evidence::Unknown);
-        let station = known(&venue.station_access);
-        assert_eq!(station.station, "Utrecht Centraal");
+        let station = &venue.station_access;
+        assert_eq!(
+            station.station,
+            Evidence::Known("Utrecht Centraal".to_owned())
+        );
         assert_eq!(
             station.walk,
             Evidence::Known(WalkTime {
@@ -429,4 +432,23 @@ fn ambiguous_dates_never_become_open_days() {
     .unwrap();
     assert_eq!(report.venues[0].availability, Evidence::Unknown);
     diagnostic(&report, 0, "availability", DiagnosticKind::Ambiguous);
+}
+
+#[test]
+fn absent_station_name_does_not_erase_walk_or_transport_evidence() {
+    let report = parse_row(r#""walk_minutes":12,"notes":"Tram stop nearby.""#);
+    let station = &report.venues[0].station_access;
+
+    assert_eq!(station.station, Evidence::Missing);
+    assert_eq!(
+        station.walk,
+        Evidence::Known(WalkTime {
+            minutes: 12,
+            approximate: false
+        })
+    );
+    assert_eq!(
+        station.public_transport_details.as_deref(),
+        Some("Tram stop nearby.")
+    );
 }

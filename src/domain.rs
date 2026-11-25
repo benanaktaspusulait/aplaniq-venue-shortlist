@@ -67,7 +67,7 @@ pub struct Venue {
     pub catering: Evidence<CateringStatus>,
     pub accessibility: Evidence<Accessibility>,
     pub availability: Evidence<Availability>,
-    pub station_access: Evidence<StationAccess>,
+    pub station_access: StationAccess,
     pub daylight: Evidence<Quality>,
     pub wifi: Evidence<Quality>,
     pub notes: Option<String>,
@@ -215,6 +215,7 @@ pub enum Accessibility {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Availability {
+    /// More specific exceptions precede the general rule for this listing.
     pub rules: Vec<AvailabilityRule>,
     pub minimum_notice_days: Option<u32>,
     pub preferred_weekday: Option<Weekday>,
@@ -260,7 +261,7 @@ impl DateRange {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct StationAccess {
-    pub station: String,
+    pub station: Evidence<String>,
     pub walk: Evidence<WalkTime>,
     pub public_transport_details: Option<String>,
 }
@@ -360,7 +361,11 @@ mod tests {
             catering: Evidence::Known(CateringStatus::Included),
             accessibility: Evidence::Missing,
             availability: Evidence::Missing,
-            station_access: Evidence::Missing,
+            station_access: StationAccess {
+                station: Evidence::Missing,
+                walk: Evidence::Missing,
+                public_transport_details: None,
+            },
             daylight: Evidence::Missing,
             wifi: Evidence::Missing,
             notes: None,

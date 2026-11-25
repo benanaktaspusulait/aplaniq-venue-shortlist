@@ -88,7 +88,7 @@ fn original_export_accounts_for_every_source_row_and_preserves_evidence() {
     );
     assert_eq!(stadstuin.daylight, Evidence::Known(Quality::Strong));
     assert_eq!(stadstuin.wifi, Evidence::Known(Quality::Acceptable));
-    assert_eq!(known(&known(&stadstuin.station_access).walk).minutes, 12);
+    assert_eq!(known(&stadstuin.station_access.walk).minutes, 12);
     let rule = &known(&stadstuin.availability).rules[0];
     assert_eq!(
         rule.dates.start(),

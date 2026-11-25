@@ -119,20 +119,15 @@ pub(super) fn normalize(
     let name = row.required("name", fields.get("name"));
     let (id, name) = (id?, name?);
     let notes = row.optional_text("notes", fields.get("notes"));
-    let walk = row.evidence("walk_minutes", fields.get("walk_minutes"), walk_time);
-    let station_access = row.evidence("nearest_station", fields.get("nearest_station"), |value| {
-        let station = text(value)?;
-        let station = if station.eq_ignore_ascii_case("Utrecht CS") {
-            "Utrecht Centraal"
-        } else {
-            station
-        };
-        Ok(StationAccess {
-            station: station.to_owned(),
-            walk,
-            public_transport_details: notes.as_deref().and_then(transport_note),
-        })
-    });
+    let station_access = StationAccess {
+        station: row.evidence(
+            "nearest_station",
+            fields.get("nearest_station"),
+            station_name,
+        ),
+        walk: row.evidence("walk_minutes", fields.get("walk_minutes"), walk_time),
+        public_transport_details: notes.as_deref().and_then(transport_note),
+    };
     Some(Venue {
         id,
         name: name.trim().to_owned(),
@@ -336,6 +331,15 @@ fn accessibility(value: &Value) -> Result<Accessibility, Issue> {
         }
         _ => Err((Invalid, "expected an accessibility flag or text")),
     }
+}
+
+fn station_name(value: &Value) -> Result<String, Issue> {
+    let name = text(value)?;
+    if name.eq_ignore_ascii_case("Utrecht CS") {
+        return Ok("Utrecht Centraal".to_owned());
+    }
+
+    Ok(name.to_owned())
 }
 
 fn walk_time(value: &Value) -> Result<WalkTime, Issue> {
