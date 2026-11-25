@@ -710,3 +710,49 @@ fn a_negated_stop_does_not_establish_public_transport() {
         });
     }
 }
+
+#[test]
+fn explicit_required_room_restrictions_survive_normalisation() {
+    for (field, raw, criterion, verdict) in [
+        (
+            "daylight",
+            "The plenary is windowless",
+            Criterion::Daylight,
+            Rejected,
+        ),
+        (
+            "wheelchair_accessible",
+            "All breakout rooms are not wheelchair accessible",
+            Criterion::Accessibility,
+            Rejected,
+        ),
+        (
+            "wheelchair_accessible",
+            "Some breakout rooms are not wheelchair accessible",
+            Criterion::Accessibility,
+            RequiresConfirmation,
+        ),
+        (
+            "wheelchair_accessible",
+            "An optional breakout room is inaccessible",
+            Criterion::Accessibility,
+            RequiresConfirmation,
+        ),
+    ] {
+        let mut row = venue("required-room");
+        row[field] = json!(raw);
+        with_rows(&[row], |result| {
+            let scenario = &result[0].primary;
+            assert_eq!(scenario.eligibility, verdict, "{raw}");
+            assert_eq!(
+                rule(scenario, criterion).outcome,
+                if verdict == Rejected {
+                    Violated
+                } else {
+                    Uncertain
+                },
+                "{raw}"
+            );
+        });
+    }
+}

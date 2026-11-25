@@ -9,7 +9,8 @@ use serde_json::Value;
 use crate::diagnostic::{Diagnostic, DiagnosticKind};
 use crate::domain::{
     Accessibility, Breakouts, Capacity, CateringStatus, CountRange, Evidence, Quality,
-    SeatedCapacity, SeatingLayout, SourceRef, StationAccess, Venue, VenueId, WalkTime,
+    RoomAccessRestriction, SeatedCapacity, SeatingLayout, SourceRef, StationAccess, Venue, VenueId,
+    WalkTime,
 };
 
 use DiagnosticKind::{Ambiguous, Invalid, Unknown, Unsupported};
@@ -137,6 +138,19 @@ pub(super) fn normalize(
     };
     let daylight_text = fields.get("daylight");
     let wifi_text = fields.get("wifi");
+    let access_value = fields.get("wheelchair_accessible");
+    let listing_restrictions: Vec<_> = access_value
+        .and_then(Value::as_str)
+        .into_iter()
+        .flat_map(access_restrictions)
+        .collect();
+    let accessibility = row.evidence("wheelchair_accessible", access_value, |value| {
+        accessibility(value, !listing_restrictions.is_empty())
+    });
+    let mut room_access_restrictions = listing_restrictions;
+    room_access_restrictions.extend(notes.as_deref().into_iter().flat_map(access_restrictions));
+    room_access_restrictions.sort_unstable();
+    room_access_restrictions.dedup();
     let mut venue = Venue {
         id,
         name: name.trim().to_owned(),
@@ -154,11 +168,8 @@ pub(super) fn normalize(
             catering,
         ),
         additional_charges: charges::from_notes(notes.as_deref()),
-        accessibility: row.evidence(
-            "wheelchair_accessible",
-            fields.get("wheelchair_accessible"),
-            accessibility,
-        ),
+        accessibility,
+        room_access_restrictions,
         availability: availability::normalize(row, fields.get("availability"), assumed_year),
         station_access,
         daylight: row.evidence("daylight", daylight_text, daylight),
@@ -329,7 +340,7 @@ fn catering(value: &Value) -> Result<CateringStatus, Issue> {
     }
 }
 
-fn accessibility(value: &Value) -> Result<Accessibility, Issue> {
+fn accessibility(value: &Value, scoped_restriction: bool) -> Result<Accessibility, Issue> {
     match value {
         Value::Bool(true) => Ok(Accessibility::ReportedAccessible),
         Value::Bool(false) => Ok(Accessibility::Inaccessible),
@@ -343,15 +354,7 @@ fn accessibility(value: &Value) -> Result<Accessibility, Issue> {
                 "ground floor only" => Ok(Accessibility::Partial(original.to_owned())),
                 _ if lower.starts_with("yes, except ")
                     || lower.starts_with("lift to ")
-                    || ((lower.contains("breakout") || lower.contains("plenary"))
-                        && [
-                            "stairs only",
-                            "stairs-only",
-                            "inaccessible",
-                            "no step-free access",
-                        ]
-                        .iter()
-                        .any(|claim| lower.contains(claim))) =>
+                    || scoped_restriction =>
                 {
                     Ok(Accessibility::Partial(original.to_owned()))
                 }
@@ -360,6 +363,43 @@ fn accessibility(value: &Value) -> Result<Accessibility, Issue> {
         }
         _ => Err((Invalid, "expected an accessibility flag or text")),
     }
+}
+
+fn access_restrictions(text: &str) -> impl Iterator<Item = RoomAccessRestriction> + '_ {
+    use RoomAccessRestriction::{Breakouts, Plenary, SomeBreakouts, SomePlenarySpace};
+    text.split([',', ';', '.', '\n']).filter_map(|clause| {
+        let clause = clause.trim().to_ascii_lowercase();
+        let claim = clause.strip_prefix("except ").unwrap_or(&clause);
+        let restriction = [
+            "stairs only",
+            "stairs-only",
+            "only accessible by stairs",
+            "inaccessible",
+            "not wheelchair accessible",
+            "no step-free access",
+        ]
+        .iter()
+        .any(|term| claim.contains(term));
+        if !restriction || claim.contains("not inaccessible") {
+            return None;
+        }
+        let partial = ["some ", "one ", "optional ", "spare ", "alternative "]
+            .iter()
+            .any(|term| claim.contains(term));
+        if claim.contains("plenary") {
+            Some(if partial { SomePlenarySpace } else { Plenary })
+        } else if claim.contains("breakout") {
+            let ambiguous_exception =
+                clause.starts_with("except ") && !claim.starts_with("all breakout");
+            Some(if partial || ambiguous_exception {
+                SomeBreakouts
+            } else {
+                Breakouts
+            })
+        } else {
+            None
+        }
+    })
 }
 
 fn station_name(value: &Value) -> Result<String, Issue> {
@@ -411,7 +451,13 @@ fn transport_note(notes: &str) -> Option<String> {
 }
 
 fn qualification(quality: &Evidence<Quality>, value: Option<&Value>) -> Option<String> {
-    if matches!(quality, Evidence::Known(Quality::Partial)) {
+    if matches!(quality, Evidence::Known(Quality::Partial))
+        || (matches!(quality, Evidence::Known(Quality::Unacceptable))
+            && value.and_then(Value::as_str).is_some_and(|text| {
+                let label = text.trim().to_ascii_lowercase();
+                label != "no windows in plenary" && label.contains("plenary")
+            }))
+    {
         return value
             .and_then(Value::as_str)
             .map(str::trim)
@@ -427,9 +473,26 @@ fn daylight(value: &Value) -> Result<Quality, Issue> {
         "no" | "dark" | "no windows in plenary" => Ok(Quality::Unacceptable),
         "partial" | "limited" => Ok(Quality::Partial),
         "unknown" => Err((Unknown, "daylight is unconfirmed")),
+        label if windowless_plenary(label) => Ok(Quality::Unacceptable),
         label if label.starts_with("mixed ") => Ok(Quality::Partial),
         _ => Err((Unsupported, "unrecognised daylight description")),
     }
+}
+
+fn windowless_plenary(label: &str) -> bool {
+    let claim = label
+        .strip_prefix("mixed ")
+        .map_or(label, |detail| {
+            detail.trim_start_matches(['—', '–', '-', ':', ' '])
+        })
+        .trim_end_matches('.');
+    matches!(
+        claim.strip_prefix("the ").unwrap_or(claim),
+        "plenary has no windows"
+            | "no windows in plenary"
+            | "windowless plenary"
+            | "plenary is windowless"
+    )
 }
 
 fn wifi(value: &Value) -> Result<Quality, Issue> {
@@ -440,7 +503,7 @@ fn wifi(value: &Value) -> Result<Quality, Issue> {
         }
         "weak" | "poor" | "unreliable" | "complaints reported" => Ok(Quality::Unacceptable),
         "poor wifi in plenary" | "unreliable wifi in plenary" | "plenary wifi is poor" => {
-            Ok(Quality::Partial)
+            Ok(Quality::Unacceptable)
         }
         "guest wifi" | "fair" => Ok(Quality::Partial),
         "unknown" => Err((Unknown, "Wi-Fi quality is unconfirmed")),

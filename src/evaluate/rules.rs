@@ -1,8 +1,8 @@
 use chrono::{Datelike, NaiveDate};
 
 use crate::domain::{
-    Accessibility, Availability, Capacity, Criterion, DateStatus, Evidence, Quality, SeatingLayout,
-    StationAccess, Venue,
+    Accessibility, Availability, Capacity, Criterion, DateStatus, Evidence, Quality,
+    RoomAccessRestriction, SeatingLayout, StationAccess, Venue,
 };
 
 use super::{
@@ -101,15 +101,17 @@ pub(super) fn breakouts(venue: &Venue, minimum: u32) -> RequirementAssessment {
 
 pub(super) fn accessibility(venue: &Venue, requires_breakouts: bool) -> RequirementAssessment {
     use Criterion::Accessibility as Rule;
-    let scoped_claim = match &venue.accessibility {
-        Evidence::Known(Accessibility::Partial(text)) => Some(text.as_str()),
-        _ => None,
-    };
-    let scope = [venue.notes.as_deref(), scoped_claim]
-        .into_iter()
-        .flatten()
-        .flat_map(|text| text.split([',', ';', '.', '\n']))
-        .filter_map(|clause| room_access_restriction(clause, requires_breakouts))
+    use RoomAccessRestriction::{Breakouts, Plenary, SomeBreakouts, SomePlenarySpace};
+    let scope = venue
+        .room_access_restrictions
+        .iter()
+        .filter_map(|restriction| match restriction {
+            Plenary => Some(Violated),
+            Breakouts if requires_breakouts => Some(Violated),
+            SomePlenarySpace => Some(Uncertain),
+            SomeBreakouts if requires_breakouts => Some(Uncertain),
+            Breakouts | SomeBreakouts => None,
+        })
         .fold(None, |worst, next| match (worst, next) {
             (Some(Violated), _) | (_, Violated) => Some(Violated),
             _ => Some(Uncertain),
@@ -152,39 +154,6 @@ pub(super) fn accessibility(venue: &Venue, requires_breakouts: bool) -> Requirem
         }
     };
     check(Rule, outcome, reason)
-}
-
-fn room_access_restriction(
-    clause: &str,
-    requires_breakouts: bool,
-) -> Option<super::RequirementOutcome> {
-    let clause = clause.trim().to_ascii_lowercase();
-    let claim = clause.strip_prefix("except ").unwrap_or(&clause);
-    let plenary = claim.contains("plenary");
-    let breakouts = requires_breakouts && claim.contains("breakout");
-    let restriction = [
-        "stairs only",
-        "stairs-only",
-        "only accessible by stairs",
-        "inaccessible",
-        "not wheelchair accessible",
-        "no step-free access",
-    ]
-    .iter()
-    .any(|restriction| claim.contains(restriction));
-    if !(plenary || breakouts) || !restriction || claim.contains("not inaccessible") {
-        return None;
-    }
-    let limited_scope = ["some ", "one ", "optional ", "spare ", "alternative "]
-        .iter()
-        .any(|qualifier| claim.contains(qualifier));
-    let ambiguous_exception =
-        clause.starts_with("except ") && !plenary && !claim.starts_with("all breakout");
-    Some(if limited_scope || ambiguous_exception {
-        Uncertain
-    } else {
-        Violated
-    })
 }
 
 pub(super) fn availability(
@@ -339,33 +308,14 @@ pub(super) fn quality(
     evidence: &Evidence<Quality>,
     qualifier: Option<&str>,
 ) -> RequirementAssessment {
-    let qualifier = qualifier.unwrap_or_default().to_ascii_lowercase();
-    let explicitly_adverse = match criterion {
-        Criterion::Daylight => [
-            "plenary has no windows",
-            "no windows in plenary",
-            "windowless plenary",
-            "plenary is windowless",
-        ]
-        .iter()
-        .any(|claim| qualifier.contains(claim)),
-        Criterion::Wifi => [
-            "poor wifi in plenary",
-            "unreliable wifi in plenary",
-            "plenary wifi is poor",
-        ]
-        .iter()
-        .any(|claim| qualifier.contains(claim)),
-        _ => false,
-    };
     let (outcome, reason) = match evidence {
+        Evidence::Known(Quality::Unacceptable) if qualifier.is_some() => (
+            Violated,
+            "The qualification explicitly reports unacceptable quality in the required plenary.",
+        ),
         Evidence::Known(Quality::Unacceptable) => (
             Violated,
             "The listing explicitly reports unacceptable quality.",
-        ),
-        Evidence::Known(Quality::Partial) if explicitly_adverse => (
-            Violated,
-            "The qualification explicitly reports unacceptable quality in the required plenary.",
         ),
         Evidence::Known(Quality::Acceptable | Quality::Strong) => (
             Satisfied,

@@ -99,6 +99,7 @@ pub struct Venue {
     pub additional_charges: AdditionalCharges,
     /// Source claims about wheelchair access.
     pub accessibility: Evidence<Accessibility>,
+    pub(crate) room_access_restrictions: Vec<RoomAccessRestriction>,
     /// Reported booking calendar and restrictions.
     pub availability: Evidence<Availability>,
     /// Transport evidence and station details.
@@ -313,6 +314,14 @@ pub enum CateringStatus {
     Partial,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum RoomAccessRestriction {
+    Plenary,
+    Breakouts,
+    SomePlenarySpace,
+    SomeBreakouts,
+}
+
 /// Wheelchair access reported by a listing.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Accessibility {
@@ -523,6 +532,7 @@ mod tests {
             catering: Evidence::Known(CateringStatus::Included),
             additional_charges: AdditionalCharges::default(),
             accessibility: Evidence::Missing,
+            room_access_restrictions: Vec::new(),
             availability: Evidence::Missing,
             station_access: StationAccess {
                 station: Evidence::Missing,
