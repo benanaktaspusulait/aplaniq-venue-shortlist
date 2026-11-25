@@ -673,3 +673,40 @@ fn fee_vat_exclusions_and_conflicts_keep_the_all_in_cost_unconfirmed() {
         });
     }
 }
+
+#[test]
+fn a_negated_stop_does_not_establish_public_transport() {
+    for (notes, outcome, verdict) in [
+        (
+            "There is no bus stop near the venue.",
+            Uncertain,
+            RequiresConfirmation,
+        ),
+        (
+            "The venue is not reachable by tram.",
+            Uncertain,
+            RequiresConfirmation,
+        ),
+        (
+            "No bus stop nearby, but attendees can travel by train.",
+            Satisfied,
+            Eligible,
+        ),
+        ("There is a bus stop near the venue.", Satisfied, Eligible),
+        ("Taxi only, no public transport.", Violated, Rejected),
+    ] {
+        let mut row = venue("transport-claim");
+        row["nearest_station"] = Value::Null;
+        row["walk_minutes"] = Value::Null;
+        row["notes"] = json!(notes);
+        with_rows(&[row], |result| {
+            let scenario = &result[0].primary;
+            assert_eq!(
+                rule(scenario, Criterion::Transport).outcome,
+                outcome,
+                "{notes}"
+            );
+            assert_eq!(scenario.eligibility, verdict, "{notes}");
+        });
+    }
+}

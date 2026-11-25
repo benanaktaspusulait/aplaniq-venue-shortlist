@@ -278,17 +278,10 @@ pub(super) fn transport(access: &StationAccess) -> RequirementAssessment {
     ]
     .iter()
     .any(|claim| detail.contains(claim));
-    let rail_or_bus = [
-        "by train",
-        "by bus",
-        "by tram",
-        "tram stop",
-        "bus stop",
-        "bus from",
-        "tram from",
-    ]
-    .iter()
-    .any(|claim| detail.contains(claim));
+    let rail_or_bus = detail
+        .split(['.', ';', ',', '\n'])
+        .flat_map(|clause| clause.split(" but "))
+        .any(affirmative_public_connection);
     let extra_cost_route = detail.contains("shuttle") && detail.contains("on request");
     let origin_concern = (detail.contains("eindhoven") || detail.contains("amsterdam"))
         && (detail.contains("far for")
@@ -321,6 +314,24 @@ pub(super) fn transport(access: &StationAccess) -> RequirementAssessment {
         )
     };
     check(Criterion::Transport, outcome, reason)
+}
+
+fn affirmative_public_connection(clause: &str) -> bool {
+    let negated = clause.split_whitespace().any(|word| {
+        matches!(word, "no" | "not" | "without" | "cannot" | "never") || word.ends_with("n't")
+    });
+    !negated
+        && [
+            "by train",
+            "by bus",
+            "by tram",
+            "tram stop",
+            "bus stop",
+            "bus from",
+            "tram from",
+        ]
+        .iter()
+        .any(|claim| clause.contains(claim))
 }
 
 pub(super) fn quality(
