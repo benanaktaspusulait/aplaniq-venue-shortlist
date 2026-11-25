@@ -42,3 +42,27 @@ sh scripts/quality-gate.sh
 ```
 
 For a major review, run `sh scripts/quality-gate.sh --major` with Rust 1.85.0 also installed. The package uses Edition 2024. See the [engineering standards](docs/engineering/rust-standards.md), [architecture](docs/architecture.md), [assessment notes](NOTES.md) and [development log](docs/assessment-log.md) for assumptions and actual agent usage.
+
+## Run in Docker
+
+Use Docker Engine with BuildKit or Docker Desktop, with the daemon running and the project directory available for bind mounts. Docker is optional. The native commands above work independently.
+
+```sh
+docker build -t aplaniq-venue-shortlist:local .
+
+docker run --rm \
+  --network none \
+  --read-only \
+  --cap-drop ALL \
+  --security-opt no-new-privileges=true \
+  -v "$(pwd)/venues.json:/data/venues.json:ro" \
+  aplaniq-venue-shortlist:local \
+  --venues /data/venues.json
+
+docker run --rm aplaniq-venue-shortlist:local --help
+docker run --rm aplaniq-venue-shortlist:local --version
+```
+
+The image runs as UID and GID `65532`. Supply a JSON file readable by that user at the mount path. Both base images are pinned by digest. The runtime contains the release binary on a Debian 13 distroless base and has no shell. Image and crate downloads can require network access during the build. The run above disables networking.
+
+Run `sh scripts/docker-smoke-test.sh` to rebuild and compare native and container output and verify expected failures. Build and run were verified on `linux/arm64`. See the [packaging record](docs/tasks/TASK-007B-docker-packaging.md#observed-validation) for the image measurement and scan results.
