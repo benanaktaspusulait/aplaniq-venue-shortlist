@@ -1,6 +1,6 @@
 # R3 business logic review
 
-**NO-GO for TASK-007.** R3-001 can admit a venue whose documented compulsory charge puts it above the working cap. Fix it in the evaluator before the CLI consumes the shortlist. The remaining findings are P1 and can be resolved before submission.
+**Baseline result: NO-GO for TASK-007.** R3-001 can admit a venue whose documented compulsory charge puts it above the working cap. Fix it in the evaluator before the CLI consumes the shortlist. The remaining findings are P1 and can be resolved before submission.
 
 ## Baseline and method
 

@@ -27,7 +27,7 @@ flowchart LR
 | `dedup` | Group confirmed listings from an ingestion report, retain potential-match pairs and record field disagreements with links to their source listings. |
 | `evaluate` | Evaluate each hard requirement against the request and evidence. Record pass, fail or unresolved with a reason. |
 | `rank` | Order eligible candidates using documented preferences and return the scoring factors. |
-| CLI rendering | Render reasons and warnings from the typed report. Keep formatting in the binary until its size justifies a separate module. |
+| `report.rs` | Private binary renderer. Format typed results for stdout, and emit recoverable source diagnostics with row and field provenance to stderr. |
 
 These are responsibilities. Add physical modules when the implementation needs them. A few passes over a vector and direct comparisons are sufficient for 30 venues.
 
@@ -64,7 +64,7 @@ TASK-002 uses `chrono` 0.4.45 as its sole direct dependency for validated dates 
 | --- | --- |
 | `serde_json` | Selected for the heterogeneous JSON envelope and fields. `arbitrary_precision` preserves decimal number text for checked conversion to integer minor units. [Documentation](https://docs.rs/serde_json/latest/serde_json/) |
 | `serde_core` | Uses the already locked map visitor to detect repeated JSON properties while their values are still available as source slices. [Documentation](https://docs.rs/serde_core/1.0.229/serde_core/) |
-| `clap` | Add when the approved CLI has multiple flags or typed inputs requiring consistent help and validation. A single optional path can use `std::env::args_os`. [Documentation](https://docs.rs/clap/latest/clap/) |
+| `clap` | Add when the approved CLI has multiple flags or typed inputs requiring consistent help and validation. A single path flag uses `std::env::args_os`. [Documentation](https://docs.rs/clap/latest/clap/) |
 | `chrono` | Selected for `NaiveDate` and `Weekday` in the request and availability evidence. Pure calendar dates need no clock or timezone features. [Documentation](https://docs.rs/chrono/latest/chrono/struct.NaiveDate.html) |
 | `rust_decimal` | Defer while checked integer minor units cover amounts such as €72.50 and integer attendee multiplication. Revisit if fractional tax, FX or another approved calculation needs decimal arithmetic and explicit rounding. [Documentation](https://docs.rs/rust_decimal/latest/rust_decimal/) |
 | `thiserror` | Defer. A small library error enum can implement `Display` and `Error` directly. Consider the derive if several wrapper variants need consistent sources. [Documentation](https://docs.rs/thiserror/latest/thiserror/) |

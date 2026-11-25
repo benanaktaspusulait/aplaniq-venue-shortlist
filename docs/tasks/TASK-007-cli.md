@@ -2,7 +2,7 @@
 
 ## Status
 
-To do.
+Complete. The native debug and release commands were verified against the original export.
 
 ## Objective
 
@@ -51,6 +51,10 @@ At least one focused command test for argument or file error handling and one fo
 ## Definition of done
 
 The documented command works, report and error behaviour are tested, and main delegates business decisions to the library. Review and commit locally.
+
+## Observed outcome
+
+The standard-library command parser requires `--venues <PATH>` and supports standalone `--help` and `--version`. The binary delegates ingestion, eligibility and ranking to the library and formats evidence in a private report module. Process tests verify exit status, stdout and stderr, record accounting and paths with spaces. Debug and release produced byte-identical application streams. See the [complete transcript](../cli-output.txt).
 
 ## Risks and unresolved assumptions
 

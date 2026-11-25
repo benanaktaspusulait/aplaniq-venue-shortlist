@@ -1,32 +1,44 @@
 # AplanIQ Venue Shortlist
 
-A local Rust CLI planned for finding and explaining venues that meet an event's hard requirements. The assessment case is a partner day near Utrecht with uncertain attendance, an approximate €15,000 budget and wheelchair access needs.
+A local Rust CLI that compares venue listings for an 80-person partner day near Utrecht, with a separate 120-person expansion assessment. It explains which venues meet the working requirements, which need confirmation and which fail.
 
-## Project status
+## Run locally
 
-The Cargo package and executable are named `venue-shortlist`. The library crate is `venue_shortlist`. The original [venue dataset](venues.json) is included. The executable is a scaffold that prints a status message to stderr and exits with status 1. The assessment requires Claude Code. Earlier business implementation used Codex at the candidate’s direction. The deviation is recorded in the assessment log. Future business implementation uses Claude Code.
-
-Phase 2 added the implementation backlog. The candidate-approved planning assumptions are recorded in TASK-001. TASK-002 added the typed Rust domain and six unit tests. TASK-003 added the library JSON loader and normaliser. The original export accounts for 30 normalised records and zero rejected records. TASK-004 will handle duplicate candidates when requested. Shortlist eligibility is preliminary and the dataset is unverified.
-
-## Development
-
-Use Git and rustup with the [pinned toolchain](rust-toolchain.toml), which includes rustfmt and Clippy. The package uses Edition 2024 and the verified MSRV is Rust 1.85.0. Read the [engineering standards](docs/engineering/rust-standards.md) and [quality gates](docs/engineering/quality-gates.md).
+Use rustup with the [pinned Rust 1.100.0 toolchain](rust-toolchain.toml). From the repository root, run:
 
 ```sh
+cargo run --locked -- --venues venues.json
+```
+
+- `--venues <PATH>` takes a local JSON file with a top-level `venues` array. The file path is required. Quote a path containing spaces.
+- `--help` prints usage and `--version` prints the application version. Run either option by itself.
+- After `cargo build --release --locked`, the equivalent binary invocation is `target/release/venue-shortlist --venues venues.json`.
+
+## Read the report
+
+The request uses a **EUR 15,000 all-in planning cap**, at least three simultaneous breakout rooms, wheelchair access, and 11, 16 and 18 March 2027. Thursday is preferred. The report offers preliminary recommendations from an unverified export. Confirm the event hours, final quote, room configuration and accessible facilities with the venue before booking. A conditional result lists evidence to verify. Unknown charges remain unresolved.
+
+The recorded run includes these lines.
+
+```text
+  Source records: 30
+  80 attendees: 3 eligible, 19 require confirmation, 8 rejected
+  120 attendees: 1 eligible, 16 require confirmation, 13 rejected
+
+Ranked eligible shortlist
+  1. De Stadstuin [v019]
+     Recommended date: Thursday 11 March 2027
+     Other supported dates: Tuesday 16 March 2027, Thursday 18 March 2027
+     Price: preliminary package EUR 6,320.00.
+```
+
+See the [complete CLI transcript](docs/cli-output.txt) and the [data audit](docs/data-analysis.md). The report goes to stdout. Recoverable source-row diagnostics and fatal errors go to stderr. Exit code `0` includes a valid empty shortlist and datasets with recoverable row errors. Code `2` means invalid arguments. Code `1` means an input or output failure. Fatal input errors prevent a partial report.
+
+## Verify changes
+
+```sh
+cargo test --locked
 sh scripts/quality-gate.sh
 ```
 
-For major reviews, also have Rust 1.85.0 available and run `sh scripts/quality-gate.sh --major`. The workflow definition reuses that command. Hosted execution is still unverified.
-
-To run the current scaffold, use `cargo run --quiet --`. The final shortlist command and its inputs will be documented during implementation.
-
-## Assessment material
-
-- [Requirements and client questions](docs/requirements.md)
-- [Venue data audit](docs/data-analysis.md)
-- [Architecture, dependencies and test strategy](docs/architecture.md)
-- [Implementation backlog and execution order](docs/tasks/README.md)
-- [Assessment notes](NOTES.md)
-- [Development history and validation](docs/assessment-log.md)
-
-Make a small local commit for each meaningful change. Inspect the status and staged diff, run relevant checks and stage only related files. Keep agent planning artifacts and genuine history. External submission and repository sharing require separate authorisation.
+For a major review, run `sh scripts/quality-gate.sh --major` with Rust 1.85.0 also installed. The package uses Edition 2024. See the [engineering standards](docs/engineering/rust-standards.md), [architecture](docs/architecture.md), [assessment notes](NOTES.md) and [development log](docs/assessment-log.md) for assumptions and actual agent usage.

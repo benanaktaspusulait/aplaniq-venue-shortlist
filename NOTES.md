@@ -18,4 +18,4 @@ These choices were adopted by the candidate for the exercise. Joa did not confir
 
 ## Review
 
-The candidate revised the access and transport rules to distinguish shortlist eligibility from booking readiness and directed Codex to implement, a deviation from the PDF's Claude Code requirement. R1 preserved independent catering and minimum spend evidence. R2 fixed silent JSON overwrites and lost room qualifiers. Three venues pass at 80 and only Fabriek 1912 passes at 120. Independent R3 is pending. See the [assessment log](docs/assessment-log.md).
+The candidate revised the access and transport rules to distinguish shortlist eligibility from booking readiness and directed Codex to implement, a deviation from the PDF's Claude Code requirement. R1 preserved independent catering and minimum spend evidence. R2 fixed silent JSON overwrites and lost room qualifiers. Three venues pass at 80 and only Fabriek 1912 passes at 120. R3 caught a mandatory fee omission. The corrected native CLI is verified. See the [assessment log](docs/assessment-log.md).
