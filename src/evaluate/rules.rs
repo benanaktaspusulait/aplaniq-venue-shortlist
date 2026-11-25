@@ -342,6 +342,50 @@ mod tests {
     use std::num::NonZeroU32;
 
     #[test]
+    fn conflicting_exact_dates_override_a_broad_rule_without_selecting_a_winner() {
+        use crate::domain::{AvailabilityRule, DateRange};
+
+        let begins = NaiveDate::from_ymd_opt(2027, 3, 1).unwrap();
+        let ends = NaiveDate::from_ymd_opt(2027, 3, 31).unwrap();
+        let day = NaiveDate::from_ymd_opt(2027, 3, 11).unwrap();
+        for (include_conflict, reverse, expected) in [
+            (false, false, Violated),
+            (false, true, Violated),
+            (true, false, Uncertain),
+            (true, true, Uncertain),
+        ] {
+            let mut rules = vec![
+                AvailabilityRule {
+                    dates: DateRange::new(begins, ends).unwrap(),
+                    weekdays: None,
+                    status: DateStatus::Available,
+                },
+                AvailabilityRule {
+                    dates: DateRange::new(day, day).unwrap(),
+                    weekdays: None,
+                    status: DateStatus::Unavailable,
+                },
+            ];
+            if include_conflict {
+                rules.push(AvailabilityRule {
+                    dates: DateRange::new(day, day).unwrap(),
+                    weekdays: None,
+                    status: DateStatus::Available,
+                });
+            }
+            if reverse {
+                rules.reverse();
+            }
+            let schedule = Evidence::Known(Availability {
+                rules,
+                minimum_notice_days: None,
+                preferred_weekday: None,
+            });
+            assert_eq!(availability(&schedule, day, None).outcome, expected);
+        }
+    }
+
+    #[test]
     fn seating_uses_both_range_bounds_and_never_uses_standing() {
         let capacity = Evidence::Known(Capacity {
             seated: vec![

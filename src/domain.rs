@@ -634,6 +634,21 @@ mod tests {
     }
 
     #[test]
+    fn minor_unit_products_match_a_wider_integer_oracle() {
+        for amount in [0, 1, 100, 1_500_000, u64::MAX / 120, u64::MAX - 1, u64::MAX] {
+            for attendees in [0, 1, 80, 120, u32::MAX] {
+                let expected = u64::try_from(u128::from(amount) * u128::from(attendees)).ok();
+                assert_eq!(
+                    MinorUnits::new(amount)
+                        .checked_mul(attendees)
+                        .map(MinorUnits::get),
+                    expected
+                );
+            }
+        }
+    }
+
+    #[test]
     fn date_range_supports_single_days_and_rejects_reversed_dates() {
         let start = NaiveDate::from_ymd_opt(2027, 3, 11).unwrap();
         let end = NaiveDate::from_ymd_opt(2027, 3, 18).unwrap();

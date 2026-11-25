@@ -826,3 +826,18 @@ fn potential_duplicate_memberships_follow_global_pair_order_in_confirmed_groups(
         assert_eq!(entry.primary.eligibility, RequiresConfirmation);
     }
 }
+
+#[test]
+fn overflow_when_adding_a_mandatory_fee_is_a_budget_rejection() {
+    let mut row = venue("fee-overflow");
+    row["price"]["amount"] = json!("184467440737095516.15");
+    row["notes"] = json!("An additional mandatory AV fee costs €1 including VAT.");
+    with_rows(&[row], |result| {
+        let primary = &result[0].primary;
+        let budget = &primary.listings[0].budget;
+        assert_eq!(primary.eligibility, Rejected);
+        assert_eq!(budget.requirement.outcome, Violated);
+        assert_eq!(budget.cost, CostEvidence::Unknown);
+        assert!(budget.gaps.contains(&BudgetGap::Overflow));
+    });
+}
