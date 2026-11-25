@@ -134,7 +134,9 @@ pub(super) fn normalize(
         walk: row.evidence("walk_minutes", fields.get("walk_minutes"), walk_time),
         public_transport_details: notes.as_deref().and_then(transport_note),
     };
-    Some(Venue {
+    let daylight_text = fields.get("daylight");
+    let wifi_text = fields.get("wifi");
+    let mut venue = Venue {
         id,
         name: name.trim().to_owned(),
         city: row.optional_text("city", fields.get("city")),
@@ -157,10 +159,15 @@ pub(super) fn normalize(
         ),
         availability: availability::normalize(row, fields.get("availability"), assumed_year),
         station_access,
-        daylight: row.evidence("daylight", fields.get("daylight"), daylight),
-        wifi: row.evidence("wifi", fields.get("wifi"), wifi),
+        daylight: row.evidence("daylight", daylight_text, daylight),
+        wifi: row.evidence("wifi", wifi_text, wifi),
+        daylight_qualification: None,
+        wifi_qualification: None,
         notes,
-    })
+    };
+    venue.daylight_qualification = qualification(&venue.daylight, daylight_text);
+    venue.wifi_qualification = qualification(&venue.wifi, wifi_text);
+    Some(venue)
 }
 
 fn raw(value: &Value) -> String {
@@ -388,6 +395,16 @@ fn transport_note(notes: &str) -> Option<String> {
     .iter()
     .any(|term| lower.contains(term))
     .then(|| notes.to_owned())
+}
+
+fn qualification(quality: &Evidence<Quality>, value: Option<&Value>) -> Option<String> {
+    if matches!(quality, Evidence::Known(Quality::Partial)) {
+        return value
+            .and_then(Value::as_str)
+            .map(str::trim)
+            .map(str::to_owned);
+    }
+    None
 }
 
 fn daylight(value: &Value) -> Result<Quality, Issue> {

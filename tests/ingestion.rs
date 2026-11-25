@@ -109,3 +109,39 @@ fn original_export_accounts_for_every_source_row_and_preserves_evidence() {
         report.diagnostics.len()
     );
 }
+
+#[test]
+fn qualified_amenities_retain_the_room_and_adverse_claim() {
+    let report = load_venues(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("venues.json"),
+        Some(2027),
+    )
+    .unwrap();
+    let fort = report
+        .venues
+        .iter()
+        .find(|venue| venue.id.as_str() == "v007")
+        .unwrap();
+    assert_eq!(fort.daylight, Evidence::Known(Quality::Partial));
+    assert_eq!(
+        fort.daylight_qualification.as_deref(),
+        Some("mixed — casemates have no windows")
+    );
+    assert_eq!(fort.wifi, Evidence::Known(Quality::Partial));
+    assert_eq!(
+        fort.wifi_qualification.as_deref(),
+        Some("4G backup only in casemates")
+    );
+
+    let report = venue_shortlist::ingest::parse_venues(r#"{"venues":[
+        {"id":"sample","name":"Hall","daylight":"mixed — plenary has no windows","wifi":"4G backup only in plenary"}
+    ]}"#, None).unwrap();
+    assert_eq!(
+        report.venues[0].daylight_qualification.as_deref(),
+        Some("mixed — plenary has no windows")
+    );
+    assert_eq!(
+        report.venues[0].wifi_qualification.as_deref(),
+        Some("4G backup only in plenary")
+    );
+}

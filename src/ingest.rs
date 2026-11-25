@@ -6,11 +6,13 @@ use std::{
     path::{Path, PathBuf},
 };
 
+mod keys;
+
 use serde_json::Value;
 
 pub use crate::diagnostic::{Diagnostic, DiagnosticKind};
 
-use crate::domain::{SourceRef, Venue};
+use crate::domain::{SourceRef, Venue, VenueId};
 use crate::normalize::{Row, normalize};
 
 /// Failure to load a complete venue input document.
@@ -27,6 +29,15 @@ pub enum InputError {
     Json(serde_json::Error),
     /// The document does not contain a top-level array of venues under the expected key.
     Envelope,
+    /// A repeated key makes the document envelope ambiguous.
+    DuplicateEnvelopeKey(String),
+    /// A named file was read but its contents could not be parsed.
+    FileParse {
+        /// Path passed by the caller.
+        path: PathBuf,
+        /// Underlying document error.
+        source: Box<InputError>,
+    },
 }
 
 impl fmt::Display for InputError {
@@ -34,6 +45,10 @@ impl fmt::Display for InputError {
         match self {
             Self::Read { path, source } => write!(f, "cannot read {}: {source}", path.display()),
             Self::Json(source) => write!(f, "invalid venue JSON: {source}"),
+            Self::DuplicateEnvelopeKey(key) => write!(f, "repeated envelope key {key:?}"),
+            Self::FileParse { path, source } => {
+                write!(f, "cannot parse {}: {source}", path.display())
+            }
             Self::Envelope => write!(f, "expected a top-level object with a venues array"),
         }
     }
@@ -44,7 +59,8 @@ impl Error for InputError {
         match self {
             Self::Read { source, .. } => Some(source),
             Self::Json(source) => Some(source),
-            Self::Envelope => None,
+            Self::FileParse { source, .. } => Some(source.as_ref()),
+            Self::Envelope | Self::DuplicateEnvelopeKey(_) => None,
         }
     }
 }
@@ -69,7 +85,7 @@ pub struct Ingestion {
 /// # Errors
 ///
 /// Returns [`InputError::Read`] for unreadable or non-UTF-8 input, or the
-/// document errors reported by [`parse_venues`].
+/// [`InputError::FileParse`] with the path and a document error from [`parse_venues`].
 pub fn load_venues(
     path: impl AsRef<Path>,
     assumed_year: Option<i32>,
@@ -79,7 +95,10 @@ pub fn load_venues(
         path: path.to_owned(),
         source,
     })?;
-    parse_venues(&input, assumed_year)
+    parse_venues(&input, assumed_year).map_err(|source| InputError::FileParse {
+        path: path.to_owned(),
+        source: Box::new(source),
+    })
 }
 
 /// Parses a venue export while accounting for every input row.
@@ -91,12 +110,15 @@ pub fn load_venues(
 /// # Errors
 ///
 /// Returns [`InputError::Json`] for malformed JSON or [`InputError::Envelope`]
-/// if the document lacks its top-level venues array.
+/// if the document lacks its top-level venues array. Repeated envelope keys
+/// return [`InputError::DuplicateEnvelopeKey`]. Rows with repeated keys are
+/// counted and rejected individually.
 pub fn parse_venues(input: &str, assumed_year: Option<i32>) -> Result<Ingestion, InputError> {
     let document: Value = serde_json::from_str(input).map_err(InputError::Json)?;
-    let records = document
-        .as_object()
-        .and_then(|object| object.get("venues"))
+    let root = document.as_object().ok_or(InputError::Envelope)?;
+    let raw_records = keys::venue_rows(input)?;
+    let records = root
+        .get("venues")
         .and_then(Value::as_array)
         .ok_or(InputError::Envelope)?;
 
@@ -106,7 +128,12 @@ pub fn parse_venues(input: &str, assumed_year: Option<i32>) -> Result<Ingestion,
         rejected_records: Vec::new(),
         diagnostics: Vec::new(),
     };
-    for (index, value) in records.iter().enumerate() {
+    for (index, (value, raw)) in records.iter().zip(raw_records).enumerate() {
+        let repeated = keys::repeated_fields(raw)?;
+        if !repeated.is_empty() {
+            reject_repeated_fields(&mut report, index, value, repeated);
+            continue;
+        }
         let mut row = Row::new(index, value, &mut report.diagnostics);
         match normalize(value, assumed_year, &mut row) {
             Some(venue) => report.venues.push(venue),
@@ -115,6 +142,32 @@ pub fn parse_venues(input: &str, assumed_year: Option<i32>) -> Result<Ingestion,
     }
 
     Ok(report)
+}
+
+fn reject_repeated_fields(
+    report: &mut Ingestion,
+    index: usize,
+    row: &Value,
+    repeated: Vec<String>,
+) {
+    let id = row
+        .get("id")
+        .and_then(Value::as_str)
+        .filter(|_| !repeated.iter().any(|key| key == "id"));
+    let source = |field| SourceRef {
+        record_index: index,
+        venue_id: id.and_then(|id| VenueId::new(id.to_owned())),
+        field,
+    };
+    report.rejected_records.push(source(None));
+    report
+        .diagnostics
+        .extend(repeated.into_iter().map(|key| Diagnostic {
+            source: source(Some(key)),
+            kind: DiagnosticKind::DuplicateKey,
+            message: "repeated JSON property makes the row ambiguous",
+            raw: None,
+        }));
 }
 
 #[cfg(test)]

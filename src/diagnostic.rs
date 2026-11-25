@@ -15,6 +15,8 @@ pub enum DiagnosticKind {
     Ambiguous,
     /// A caller-supplied year was applied to yearless availability.
     AssumedYear,
+    /// A repeated JSON object key caused the containing row to be rejected.
+    DuplicateKey,
 }
 
 /// Diagnostic and provenance for an individual record or field.

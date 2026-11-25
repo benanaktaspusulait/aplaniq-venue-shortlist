@@ -31,9 +31,10 @@ Verify purpose, actual usage, selected version, features, compiler compatibility
 | Direct crate | Use and reviewed configuration |
 | --- | --- |
 | `chrono` 0.4.45 | Provides validated `NaiveDate` and `Weekday` used by the domain and availability parser. The standard library has no equivalent. Defaults are disabled. Upstream declares Rust 1.62 and MIT OR Apache-2.0. [Registry](https://crates.io/crates/chrono/0.4.45) |
-| `serde_json` 1.0.154 | Parses heterogeneous JSON and retains numeric text for exact minor-unit conversion. Uses `std` and `arbitrary_precision`. No standard-library JSON parser. Upstream declares Rust 1.71 and MIT OR Apache-2.0. [Registry](https://crates.io/crates/serde_json/1.0.154) |
+| `serde_core` 1.0.229 | Already in the lockfile. Exposes the map visitor interface needed to find repeated keys before collapse. Defaults are disabled. Upstream declares Rust 1.56 and MIT OR Apache-2.0. [Registry](https://crates.io/crates/serde_core/1.0.229) |
+| `serde_json` 1.0.154 | Parses heterogeneous JSON and retains numeric text for exact minor-unit conversion. Uses `std`, `arbitrary_precision` and `raw_value` to also inspect source object keys. No standard-library JSON parser. Upstream declares Rust 1.71 and MIT OR Apache-2.0. [Registry](https://crates.io/crates/serde_json/1.0.154) |
 
-Both locked releases were verified against the pinned compiler and the project MSRV. Supply-chain checks are defined in the [gates](quality-gates.md). Review the consequences of changing precision, parsing or clock features.
+The locked releases are checked against the pinned compiler and the project MSRV. Supply-chain checks are defined in the [gates](quality-gates.md). Review the consequences of changing precision, parsing or clock features.
 
 [Optional Docker packaging](../tasks/TASK-007B-docker-packaging.md) is subordinate to the native deliverable. Match the pinned Rust builder, verify linkage against the runtime base, use a locked multistage release build and run as non-root with read-only external input. Test argument forwarding, help, invalid-input exit status, network-free execution and native parity. Exclude sources, secrets, agent history and assessment material from the runtime image. No publishing or deployment.
 

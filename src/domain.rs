@@ -103,8 +103,12 @@ pub struct Venue {
     pub station_access: StationAccess,
     /// Daylight evidence for event spaces.
     pub daylight: Evidence<Quality>,
+    /// Reported scope of a qualified natural-light claim.
+    pub daylight_qualification: Option<String>,
     /// Network quality and coverage evidence.
     pub wifi: Evidence<Quality>,
+    /// Reported scope of a qualified network claim.
+    pub wifi_qualification: Option<String>,
     /// Additional source notes retained as text.
     pub notes: Option<String>,
 }
@@ -514,7 +518,9 @@ mod tests {
                 public_transport_details: None,
             },
             daylight: Evidence::Missing,
+            daylight_qualification: None,
             wifi: Evidence::Missing,
+            wifi_qualification: None,
             notes: None,
         };
 

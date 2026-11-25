@@ -90,9 +90,20 @@ pub(super) fn record<'a>(left: &'a Venue, right: &'a Venue, conflicts: &mut Vec<
     );
     record(
         Field::Daylight,
-        known_differs(&left.daylight, &right.daylight),
+        known_differs(&left.daylight, &right.daylight)
+            || supplied_differs(
+                left.daylight_qualification.as_ref(),
+                right.daylight_qualification.as_ref(),
+            ),
     );
-    record(Field::Wifi, known_differs(&left.wifi, &right.wifi));
+    record(
+        Field::Wifi,
+        known_differs(&left.wifi, &right.wifi)
+            || supplied_differs(
+                left.wifi_qualification.as_ref(),
+                right.wifi_qualification.as_ref(),
+            ),
+    );
     record(
         Field::Notes,
         supplied_differs(left.notes.as_ref(), right.notes.as_ref()),

@@ -455,3 +455,81 @@ fn absent_station_name_does_not_erase_walk_or_transport_evidence() {
         Some("Tram stop nearby.")
     );
 }
+
+#[test]
+fn rejects_repeated_json_properties_without_losing_adjacent_rows() {
+    for (fields, path) in [
+        (
+            r#""wheelchair_accessible": false, "wheelchair_accessible": true"#,
+            "wheelchair_accessible",
+        ),
+        (
+            r#""wheelchair_accessible": true, "wheelchair_accessible": false"#,
+            "wheelchair_accessible",
+        ),
+        (r#""wifi":"poor","w\u0069fi":"fiber""#, "wifi"),
+        (r#""capacity":60,"capacity":160"#, "capacity"),
+        (
+            r#""price":{"amount":18000},"price":{"amount":9000}"#,
+            "price",
+        ),
+        (r#""price":{"amount":18000,"amount":9000}"#, "price.amount"),
+        (
+            r#""extension":[{"note":false,"note":true}]"#,
+            "extension[0].note",
+        ),
+    ] {
+        let input = format!(
+            r#"{{"venues":[{{"id":"a","name":"Hall",{fields}}},{{"id":"b","name":"Annexe"}}]}}"#
+        );
+        let report = parse_venues(&input, YEAR).unwrap();
+        assert_eq!(report.source_record_count, 2);
+        assert_eq!(report.venues.len(), 1);
+        assert_eq!(report.venues[0].sources[0].record_index, 1);
+        assert_eq!(report.rejected_records.len(), 1);
+        assert_eq!(report.rejected_records[0].record_index, 0);
+        assert_eq!(
+            report.rejected_records[0]
+                .venue_id
+                .as_ref()
+                .unwrap()
+                .as_str(),
+            "a"
+        );
+        assert_eq!(report.diagnostics[0].source.field.as_deref(), Some(path));
+    }
+    assert!(matches!(
+        parse_venues(r#"{"venues":[],"venues":[]}"#, YEAR),
+        Err(InputError::DuplicateEnvelopeKey(key)) if key == "venues"
+    ));
+    let report = parse_venues(
+        r#"{"venues":[{"id":"first","id":"second","name":"Hall"}]}"#,
+        YEAR,
+    )
+    .unwrap();
+    assert_eq!(report.rejected_records[0].venue_id, None);
+    assert_eq!(report.diagnostics[0].kind, DiagnosticKind::DuplicateKey);
+}
+
+#[test]
+fn named_file_parse_error_retains_path_and_json_cause() {
+    use std::{error::Error, path::Path};
+
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml");
+    let error = load_venues(&path, YEAR).unwrap_err();
+    let InputError::FileParse {
+        path: actual,
+        source,
+    } = &error
+    else {
+        panic!("expected a named file parse error");
+    };
+    assert_eq!(actual, &path);
+    let InputError::Json(json) = source.as_ref() else {
+        panic!("expected a JSON error");
+    };
+    assert_eq!((json.line(), json.column()), (1, 2));
+    assert!(error.to_string().contains(path.to_str().unwrap()));
+    assert!(error.to_string().contains("line 1 column 2"));
+    assert!(error.source().and_then(Error::source).is_some());
+}
