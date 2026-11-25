@@ -37,7 +37,7 @@ Follow numerical order for completed deliverables. Once TASK-001 defines the sce
 
 ## Engineering review checkpoints
 
-The [Rust engineering standards](../engineering-standards.md) define the gates for every implementation task and major review. Task-specific commands supplement those gates.
+The [Rust engineering standards](../engineering/rust-standards.md) and [quality gate](../engineering/quality-gates.md) apply to every implementation task and major review. Task-specific commands supplement those gates.
 
 | Checkpoint | When | Review focus |
 | --- | --- | --- |
@@ -66,19 +66,19 @@ At each checkpoint inspect actual source, tests and results, applicable business
 ## Open decisions and delivery risks
 
 - Use [PD-001–007 and AC-01–15](../requirements.md). The export is unverified. Keep provisional eligibility separate from booking readiness. A controlled fixture and the v019 regression demonstrate the intended shortlist behaviour.
-- The PDF requires Claude Code. The candidate directed Codex to implement instead and the deviation is documented in the assessment log. No GSD planning directory existed at the planning handoff. The final push and sharing are a separate external milestone and are outside this planning run.
+- The PDF requires Claude Code. Earlier business implementation used Codex at the candidate’s direction. That deviation is documented in the assessment log. No GSD planning directory existed at the planning handoff. The final push and sharing are a separate external milestone and are outside this planning run.
 
 ## Boundaries and time budget
 
 TASK-003 parses evidence, TASK-004 handles identity and conflicts, TASK-005 decides eligibility and TASK-006 ranks confirmed candidates. TASK-007 renders what the core decided. Test each implementation task as it lands. TASK-008 checks the assembled path and the real input. TASK-009 reviews observed code and test evidence. TASK-010 assembles and verifies the final delivery.
 
-The tasks cover the assessment without a separate dependency-selection milestone, duplicate testing project or infrastructure work. Remaining delivery work includes the executable feature, verified review and authorised delivery. Record the actual Codex planning and implementation history. The PDF’s Claude Code requirement remains a documented deviation.
+The tasks cover the assessment without a separate dependency-selection milestone, duplicate testing project or infrastructure work. Remaining delivery work includes the executable feature, verified review and authorised delivery. Record actual agent planning and implementation history. The PDF’s Claude Code requirement remains a documented deviation.
 
 The original active-work estimate is **141 minutes**, including **109 minutes** for TASK-002–008 implementation and validation. TASK-004–010 total 91 estimated minutes after TASK-003, before optional packaging. The first recorded Phase 1 check through final verification took **3 minutes 59 seconds**. Count Phase 2, TASK-001 and any other assessment work against the same 180-minute cap. See the [assessment log](../assessment-log.md) for measured intervals. Protect the last 20 minutes for review and final verification, already included in the 141-minute estimate. If pressure increases, reduce parser breadth for undocumented formats, cosmetic output work and optional follow-up display. Protect the working command, hard filters, ranked results, focused tests and honest notes. At the limit, stop and record what remains.
 
 ## Agent workflow
 
-Before starting a task, read it and its dependencies, inspect the current code, confirm scope and acceptance criteria, and write a focused plan. Record the actual implementing agent and add relevant tests. The candidate selected Codex for this workspace. Run the listed checks, examine the actual diff and acceptance evidence, and correct observed issues. Record the test results, references and task status in the assessment log and active plan. Mark a task complete only when its acceptance evidence exists.
+Before starting a task, read it and its dependencies, inspect the current code, confirm scope and acceptance criteria, and write a focused plan. Record the actual implementing agent and add relevant tests. Use Claude Code for business implementation and corrections. Codex may audit, plan and enforce engineering standards. Run the listed checks, examine the actual diff and acceptance evidence, and correct observed issues. Record the test results, references and task status in the assessment log and active plan. Mark a task complete only when its acceptance evidence exists.
 
 Use these task IDs and links in agent planning. If GSD is chosen, import or reference this backlog when creating the genuine plan. Maintain execution status in that plan once adopted. Until then, maintain status in the individual task files and link to the assessment log for evidence. Record the selected plan location so there is one source for live status. Commit the actual artifacts emitted by the selected workflow.
 

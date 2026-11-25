@@ -44,7 +44,7 @@ Re-run cases for any observed defect. Independently inspect at least one hard re
 
 ## Validation commands
 
-`git log --oneline`, `git diff --stat d27ce42..HEAD` and `git diff d27ce42..HEAD -- src tests Cargo.toml Cargo.lock`. Inspect follow-up diffs. Run `cargo test` and `cargo clippy --all-targets -- -D warnings` after fixes.
+`git log --oneline`, `git diff --stat d27ce42..HEAD` and `git diff d27ce42..HEAD -- src tests Cargo.toml Cargo.lock`. Inspect follow-up diffs. Run `sh scripts/quality-gate.sh --major` after fixes.
 
 ## Definition of done
 

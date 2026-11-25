@@ -44,7 +44,7 @@ Final clean-tree command, final quality gates and verification of the tracked fi
 
 ## Validation commands
 
-`cargo fmt --all -- --check`, `cargo clippy --all-targets -- -D warnings`, `cargo test`, `cargo check`, the exact README command, `git status --short`, `git diff --cached --check` and `git ls-files`.
+`sh scripts/quality-gate.sh --major`, the exact shortlist command in README, `git status --short`, `git diff --cached --check` and `git ls-files`.
 
 ## Definition of done
 

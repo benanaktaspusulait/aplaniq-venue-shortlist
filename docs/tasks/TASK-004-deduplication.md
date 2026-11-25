@@ -46,7 +46,7 @@ Spoorhuis v004/v005, Domzicht v009/v010, Moreelse v023/v024, synthetic similar-n
 
 ## Validation commands
 
-`cargo fmt --all -- --check`, `cargo test --lib`.
+Run `sh scripts/quality-gate.sh` for implementation and `sh scripts/quality-gate.sh --major` at R2.
 
 ## Definition of done
 
@@ -54,7 +54,7 @@ Identity decisions and field conflicts are auditable in tests and downstream dat
 
 ## Risks and unresolved assumptions
 
-No supplier address proves identity for the three pairs. See PD-006 and AC-10. The Moreelse event floor might be separate inventory. Conservative warnings may be the only reliable treatment.
+No supplier address proves identity for the three pairs. At R2, track the separate parser finding STD-001 in the [standards audit](../engineering/standards-audit.md#unresolved-findings). Claude Code must address repeated JSON properties at the parsing boundary before eligibility work. Deduplicating venue rows cannot recover a property already overwritten by parsing. See PD-006 and AC-10. The Moreelse event floor might be separate inventory. Conservative warnings may be the only reliable treatment.
 
 ## Estimated effort
 

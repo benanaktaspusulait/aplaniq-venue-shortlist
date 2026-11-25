@@ -1,3 +1,3 @@
 # Claude Code repository instructions
 
-Follow [AGENTS.md](AGENTS.md) and the canonical [Rust engineering standards](docs/engineering-standards.md). Use the requirements, task backlog and assessment log linked there. Record the agent actually used for each task.
+Before making any change, read and follow [AGENTS.md](AGENTS.md) and the canonical [Rust engineering standards](docs/engineering/rust-standards.md). Use the requirements, task backlog and assessment log linked there. Record the agent actually used for each task.

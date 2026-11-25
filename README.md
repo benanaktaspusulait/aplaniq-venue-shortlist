@@ -4,20 +4,19 @@ A local Rust CLI planned for finding and explaining venues that meet an event's 
 
 ## Project status
 
-The Cargo package and executable are named `venue-shortlist`. The library crate is `venue_shortlist`. The original [venue dataset](venues.json) is included. The executable is a scaffold that prints a status message to stderr and exits with status 1. The assessment requires Claude Code. The candidate directed this workspace to use Codex, and the deviation is recorded in the assessment log.
+The Cargo package and executable are named `venue-shortlist`. The library crate is `venue_shortlist`. The original [venue dataset](venues.json) is included. The executable is a scaffold that prints a status message to stderr and exits with status 1. The assessment requires Claude Code. Earlier business implementation used Codex at the candidate’s direction. The deviation is recorded in the assessment log. Future business implementation uses Claude Code.
 
 Phase 2 added the implementation backlog. The candidate-approved planning assumptions are recorded in TASK-001. TASK-002 added the typed Rust domain and six unit tests. TASK-003 added the library JSON loader and normaliser. The original export accounts for 30 normalised records and zero rejected records. TASK-004 will handle duplicate candidates when requested. Shortlist eligibility is preliminary and the dataset is unverified.
 
 ## Development
 
-Use Git and stable Rust with Cargo, rustfmt and Clippy. The package uses Edition 2024 and supports Rust 1.85.0 or later. See the [engineering standards](docs/engineering-standards.md) for the MSRV check, release gates and review policy.
+Use Git and rustup with the [pinned toolchain](rust-toolchain.toml), which includes rustfmt and Clippy. The package uses Edition 2024 and the verified MSRV is Rust 1.85.0. Read the [engineering standards](docs/engineering/rust-standards.md) and [quality gates](docs/engineering/quality-gates.md).
 
 ```sh
-cargo fmt --all -- --check
-cargo clippy --locked --all-targets -- -D warnings
-cargo test --locked
-cargo check --locked --all-targets
+sh scripts/quality-gate.sh
 ```
+
+For major reviews, also have Rust 1.85.0 available and run `sh scripts/quality-gate.sh --major`. The workflow definition reuses that command. Hosted execution is still unverified.
 
 To run the current scaffold, use `cargo run --quiet --`. The final shortlist command and its inputs will be documented during implementation.
 
