@@ -2,7 +2,8 @@
 
 use std::{
     error::Error,
-    fmt, fs, io,
+    fmt, fs,
+    io::{self, Read},
     path::{Path, PathBuf},
 };
 
@@ -15,6 +16,11 @@ pub use crate::diagnostic::{Diagnostic, DiagnosticKind};
 use crate::domain::{SourceRef, Venue, VenueId};
 use crate::normalize::{Row, normalize};
 
+// The original export has about 30 rows. The byte limit bounds decoding and the
+// row limit also bounds pairwise duplicate checks for larger local exports.
+const MAX_EXPORT_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_VENUE_ROWS: usize = 1_000;
+
 /// Failure to load a complete venue input document.
 #[derive(Debug)]
 pub enum InputError {
@@ -25,6 +31,10 @@ pub enum InputError {
         /// Underlying I/O error.
         source: io::Error,
     },
+    /// The export exceeds the supported byte limit.
+    ExportTooLarge,
+    /// The input array exceeds the supported row limit.
+    TooManyRows,
     /// The input is not valid JSON.
     Json(serde_json::Error),
     /// The document does not contain a top-level array of venues under the expected key.
@@ -44,6 +54,8 @@ impl fmt::Display for InputError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Read { path, source } => write!(f, "cannot read {}: {source}", path.display()),
+            Self::ExportTooLarge => write!(f, "venue export exceeds {MAX_EXPORT_BYTES} bytes"),
+            Self::TooManyRows => write!(f, "venue array exceeds {MAX_VENUE_ROWS} rows"),
             Self::Json(source) => write!(f, "invalid venue JSON: {source}"),
             Self::DuplicateEnvelopeKey(key) => write!(f, "repeated envelope key {key:?}"),
             Self::FileParse { path, source } => {
@@ -60,7 +72,10 @@ impl Error for InputError {
             Self::Read { source, .. } => Some(source),
             Self::Json(source) => Some(source),
             Self::FileParse { source, .. } => Some(source.as_ref()),
-            Self::Envelope | Self::DuplicateEnvelopeKey(_) => None,
+            Self::Envelope
+            | Self::DuplicateEnvelopeKey(_)
+            | Self::ExportTooLarge
+            | Self::TooManyRows => None,
         }
     }
 }
@@ -91,14 +106,41 @@ pub fn load_venues(
     assumed_year: Option<i32>,
 ) -> Result<Ingestion, InputError> {
     let path = path.as_ref();
-    let input = fs::read_to_string(path).map_err(|source| InputError::Read {
+    let read_error = |source| InputError::Read {
         path: path.to_owned(),
         source,
-    })?;
-    parse_venues(&input, assumed_year).map_err(|source| InputError::FileParse {
+    };
+    let file_error = |source| InputError::FileParse {
         path: path.to_owned(),
         source: Box::new(source),
-    })
+    };
+    let metadata = fs::metadata(path).map_err(&read_error)?;
+    if !metadata.is_file() {
+        return Err(read_error(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "expected a regular file",
+        )));
+    }
+    if metadata.len() > MAX_EXPORT_BYTES {
+        return Err(file_error(InputError::ExportTooLarge));
+    }
+
+    let mut bytes = Vec::new();
+    fs::File::open(path)
+        .map_err(&read_error)?
+        .take(MAX_EXPORT_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(&read_error)?;
+    if exceeds_byte_limit(bytes.len()) {
+        return Err(file_error(InputError::ExportTooLarge));
+    }
+    let input = std::str::from_utf8(&bytes)
+        .map_err(|source| read_error(io::Error::new(io::ErrorKind::InvalidData, source)))?;
+    parse_venues(input, assumed_year).map_err(file_error)
+}
+
+fn exceeds_byte_limit(len: usize) -> bool {
+    u64::try_from(len).map_or(true, |len| len > MAX_EXPORT_BYTES)
 }
 
 /// Parses a venue export while accounting for every input row.
@@ -110,17 +152,23 @@ pub fn load_venues(
 /// # Errors
 ///
 /// Returns [`InputError::Json`] for malformed JSON or [`InputError::Envelope`]
-/// if the document lacks its top-level venues array. Repeated envelope keys
+/// if the document lacks its top-level venues array. It rejects documents
+/// larger than 8 MiB or containing more than 1,000 venue rows. Repeated envelope keys
 /// return [`InputError::DuplicateEnvelopeKey`]. Rows with repeated keys are
 /// counted and rejected individually.
 pub fn parse_venues(input: &str, assumed_year: Option<i32>) -> Result<Ingestion, InputError> {
+    if exceeds_byte_limit(input.len()) {
+        return Err(InputError::ExportTooLarge);
+    }
     let document: Value = serde_json::from_str(input).map_err(InputError::Json)?;
     let root = document.as_object().ok_or(InputError::Envelope)?;
+    let records = root.get("venues").and_then(Value::as_array);
+    // The raw envelope check also catches a repeated key whose final value is not an array.
+    if records.is_some_and(|rows| rows.len() > MAX_VENUE_ROWS) {
+        return Err(InputError::TooManyRows);
+    }
     let raw_records = keys::venue_rows(input)?;
-    let records = root
-        .get("venues")
-        .and_then(Value::as_array)
-        .ok_or(InputError::Envelope)?;
+    let records = records.ok_or(InputError::Envelope)?;
 
     let mut report = Ingestion {
         source_record_count: records.len(),

@@ -10,7 +10,7 @@ Use rustup with the [pinned Rust 1.100.0 toolchain](rust-toolchain.toml). From t
 cargo run --locked -- --venues venues.json
 ```
 
-- `--venues <PATH>` takes a local JSON file with a top-level `venues` array. The file path is required. Quote a path containing spaces.
+- `--venues <PATH>` takes a local JSON file with a top-level `venues` array. The file path is required. Quote a path containing spaces. Exports may contain up to 1,000 venue rows and occupy up to 8 MiB.
 - `--help` prints usage and `--version` prints the application version. Run either option by itself.
 - After `cargo build --release --locked`, the equivalent binary invocation is `target/release/venue-shortlist --venues venues.json`.
 

@@ -297,3 +297,32 @@ fn unresolved_group_and_all_rejected_inputs_are_valid_reports() {
         stdout(&output).contains("Daylight: The listing explicitly reports unacceptable quality.")
     );
 }
+
+#[test]
+fn enforces_export_size_and_row_limits_with_context() {
+    let fixture = Fixture::new();
+    let mut input = r#"{"venues":[]}"#.to_owned();
+    input.extend(std::iter::repeat_n(' ', 8 * 1024 * 1024 - input.len()));
+    let path = fixture.file("bounded.json", &input);
+    assert_eq!(run(&path).status.code(), Some(0));
+    input.push(' ');
+    let oversized = fixture.file("too large.json", &input);
+    let rows = vec!["null"; 1_000].join(",");
+    let within = fixture.file("within rows.json", &format!(r#"{{"venues":[{rows}]}}"#));
+    assert!(stdout(&run(&within)).contains("Source records: 1000"));
+    let too_many = fixture.file(
+        "too many rows.json",
+        &format!(r#"{{"venues":[{rows}, null]}}"#),
+    );
+    for (path, expected) in [
+        (oversized, "venue export exceeds 8388608 bytes"),
+        (too_many, "venue array exceeds 1000 rows"),
+        (fixture.0.clone(), "expected a regular file"),
+    ] {
+        let output = run(&path);
+        assert_eq!(output.status.code(), Some(1));
+        assert_eq!(stdout(&output), "");
+        assert!(stderr(&output).contains(path.to_str().unwrap()));
+        assert!(stderr(&output).contains(expected), "{}", stderr(&output));
+    }
+}
