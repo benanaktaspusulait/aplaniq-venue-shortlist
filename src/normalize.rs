@@ -138,6 +138,9 @@ pub(super) fn normalize(
         id,
         name: name.trim().to_owned(),
         city: row.optional_text("city", fields.get("city")),
+        address: row.evidence("address", fields.get("address"), |value| {
+            text(value).map(str::to_owned)
+        }),
         sources: vec![row.source(None)],
         capacity: row.evidence("capacity", fields.get("capacity"), capacity),
         breakouts: row.evidence("breakout_rooms", fields.get("breakout_rooms"), breakouts),

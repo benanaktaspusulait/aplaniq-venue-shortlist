@@ -83,6 +83,8 @@ pub struct Venue {
     pub name: String,
     /// Reported city, when present.
     pub city: Option<String>,
+    /// Source address evidence.
+    pub address: Evidence<String>,
     /// Source records that supplied the venue facts.
     pub sources: Vec<SourceRef>,
     /// Plenary capacity evidence by layout.
@@ -498,6 +500,7 @@ mod tests {
             id: VenueId::new("sample".to_owned()).unwrap(),
             name: "Sample venue".to_owned(),
             city: None,
+            address: Evidence::Missing,
             sources: Vec::new(),
             capacity: Evidence::Missing,
             breakouts: Evidence::Missing,
