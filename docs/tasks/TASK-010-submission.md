@@ -2,7 +2,7 @@
 
 ## Status
 
-To do.
+Local handoff verified on the post-assessment branch. Private external delivery is pending. The original time-limited assessment snapshot is `35570b4`.
 
 ## Objective
 
@@ -61,3 +61,9 @@ Private access and sharing need user authorisation. The time cap can leave work 
 ## Suggested Git commit messages
 
 `docs: finalise assessment notes and verification`
+
+## Local handoff
+
+The one-command README invocation and major gate passed on the tracked source. The [NOTES](../../NOTES.md) render fits on one A4 page and preserves the documented agent and timing disclosures. The tracked task plans, actual corrections and test evidence can be inspected from a clean tree. See [TASK-008](TASK-008-validation.md#post-assessment-validation) for commands and [R4](TASK-009-code-review.md#review-and-resolution) for findings.
+
+The completed branch is additional work after the assessment time-limit stop. Neither a private destination nor Joa's repository access has been verified. The external milestone remains open.

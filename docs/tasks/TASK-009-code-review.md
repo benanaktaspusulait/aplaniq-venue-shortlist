@@ -2,7 +2,7 @@
 
 ## Status
 
-To do.
+The original R4 review was returned in the conversation. The local corrective work and review evidence are complete on the post-assessment branch. The original assessment process deviation remains.
 
 ## Objective
 
@@ -61,3 +61,17 @@ A same-agent self-report can miss its own errors. Time-box review and prioritise
 ## Suggested Git commit messages
 
 `fix: address shortlist review findings` or `docs: record independent implementation review`. Use a more specific fix subject for a concrete defect.
+
+## Review and resolution
+
+Codex inspected the original PDF, source data, tests and the committed diff from `d27ce42` to the original snapshot `35570b4`. A second pass inspected the corrective diffs and fresh test output. The same Codex performed implementation and review.
+
+| Finding | Evidence and resolution |
+| --- | --- |
+| R4-001 · HIGH · P0 | A sentence containing an optional screen and a required €300 AV charge incorrectly left a €14,900 package eligible. The new eligibility test failed on the original code. Commit `ec6384d` scopes supported mixed clauses. Tests check the €15,200 rejection, the €15,000 ceiling, missing amounts and explicitly optional charges. Commit `02e18f3` verifies the rejection in CLI output. |
+| R4-002 · HIGH · P0 | The PDF requires Claude Code. Codex wrote the code at the candidate's direction. The historical deviation is documented in NOTES and the assessment log. No Claude Code or GSD evidence was manufactured. |
+| R4-003 · MEDIUM · P1 | NOTES now discusses the concrete R2 diff `1bac90c`. A rendered A4 page was checked. |
+| R4-004 · MEDIUM · P1 | Clean-archive major gate and reproducibility completed in [TASK-008](TASK-008-validation.md#post-assessment-validation). The test checks prices and expansion per venue block. |
+| R4-005 · HIGH · P1 | The optional container again passed its smoke test. The offline Trivy rescan still found two high findings in the pinned runtime base with no fixed version listed in that report. No base or dependency change was made. |
+
+The fresh original-data run keeps v004 outside the shortlist, reports v029's unresolved USD price and preserves the original recommendation order. The technical local handoff has fresh evidence. Full compliance with the original process cannot be claimed.

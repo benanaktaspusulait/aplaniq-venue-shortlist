@@ -2,7 +2,7 @@
 
 ## Status
 
-Stopped at the assessment time limit. The clean-checkout and fresh end-to-end gates remain unverified.
+The original assessment stopped at the time limit. The local validation deliverable was completed on the post-assessment branch. The original state and the later results are recorded separately below.
 
 ## Objective
 
@@ -89,4 +89,12 @@ Historical results describe the earlier tasks. TASK-008 did not rerun them or ch
 | CI workflow | PASS | Existing `.github/workflows/quality.yml` at `29defc5` uses read-only contents, an immutable checkout reference and the canonical major gate. | Static inspection only. No workflow changes or fresh upstream verification. |
 | Remote CI execution | NOT VERIFIED | No hosted run was observed. | Validate during an authorised hosted run. |
 
-The next technical work is clean-checkout reproduction, fresh native and Docker validation, and a targeted check of the test coverage gaps. TASK-009 / R4 was not started. TASK-008 is incomplete.
+At the stop, clean-checkout reproduction, fresh native and Docker validation, and targeted coverage checks remained open. R4 was still ahead.
+
+## Post-assessment validation
+
+- A clean archive of `02e18f3` passed `sh scripts/quality-gate.sh --major`. Debug, release and Rust 1.85.0 each passed 29 unit and 34 integration tests. There were no failures, ignored tests or doctests.
+- The documented `cargo run --locked -- --venues venues.json` ran twice. Stdout and application diagnostics matched each other, the release binary and the earlier native capture. All 30 records were accounted for. At 80 attendees the order remained v019, v028, v021 with 3 eligible, 19 conditional and 8 rejected. At 120, Fabriek 1912 alone was eligible, with 16 conditional and 13 rejected. The archived export matched the original ZIP bytes.
+- The controlled CLI fixture in `02e18f3` checks a synthetic v019, two ranked entries, qualified access, a hard budget rejection, both headcounts and a source diagnostic. The original-export CLI test binds prices, dates and expansion to each listing. Existing process tests check empty and malformed inputs, status and output channels.
+- The Docker smoke test passed on Linux arm64. The rebuilt image measured 39,258,290 bytes. Runtime settings, native parity and error paths passed again. The image was removed after the scan. Application execution on amd64 remains unverified.
+- The [assessment log](../assessment-log.md#25-november-2026-post-assessment-completion) records security scan scope, dependency metadata and remaining limitations.
