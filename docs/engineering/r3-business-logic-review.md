@@ -47,3 +47,8 @@ An expansion-first alternative would compare supported weekday, 120-person verdi
 - The public API supplies the three lists, dates, costs and their completeness, factors, both attendance verdicts, evidence and diagnostics. Source counts are available from ingestion and deduplication. TASK-007 can render these without a new pricing or eligibility engine. After the P0 correction, show package amounts and day-level availability as preliminary, and add the aggregate reason from R3-005 before final submission.
 
 Only review documentation changed. No policy or application code was changed.
+
+
+## Correction status
+
+All five findings were corrected and covered by eligibility regressions before TASK-007. Known fixed additional EUR charges now contribute to the mandatory lower bound, and unresolved scope, conflicting claims or VAT treatment remain visible. The date parser accepts equivalent month-first and weekday-first restrictions, explicit darkness and all-room access exclusions are hard failures, and the evaluator exposes a typed cause for aggregate date confirmation. The original dataset and PD-007 remain unchanged.

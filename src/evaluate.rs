@@ -61,6 +61,17 @@ pub struct ListingAssessment<'a> {
     pub dates: Vec<ListingDate>,
 }
 
+/// Why a date needs confirmation at entity level.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ConfirmationCause {
+    /// One or more requirements need further evidence.
+    ListingEvidence,
+    /// Confirmed listings differ in whether they support this date.
+    SourceDisagreement,
+    /// The bookable space may duplicate another listing.
+    PotentialDuplicate,
+}
+
 /// Combined outcome for a requested day across confirmed source configurations.
 #[derive(Debug, PartialEq, Eq)]
 pub struct ScenarioDate {
@@ -68,6 +79,8 @@ pub struct ScenarioDate {
     pub date: NaiveDate,
     /// Eligibility for this date, including material identity uncertainty.
     pub eligibility: Eligibility,
+    /// Cause of an unresolved decision, if any.
+    pub confirmation: Option<ConfirmationCause>,
 }
 
 /// Eligibility for one attendance scenario.
@@ -186,17 +199,30 @@ fn scenario<'a>(
             let mut results = listings
                 .iter()
                 .filter_map(|listing| listing.dates.get(index));
-            let eligibility = match results.next() {
+            let (eligibility, confirmation) = match results.next() {
                 Some(first) if results.all(|other| other.eligibility == first.eligibility) => {
-                    if first.eligibility == Eligibility::Eligible && uncertain_identity {
-                        Eligibility::RequiresConfirmation
-                    } else {
-                        first.eligibility
+                    match first.eligibility {
+                        Eligibility::Eligible if uncertain_identity => (
+                            Eligibility::RequiresConfirmation,
+                            Some(ConfirmationCause::PotentialDuplicate),
+                        ),
+                        Eligibility::RequiresConfirmation => (
+                            Eligibility::RequiresConfirmation,
+                            Some(ConfirmationCause::ListingEvidence),
+                        ),
+                        verdict => (verdict, None),
                     }
                 }
-                _ => Eligibility::RequiresConfirmation,
+                _ => (
+                    Eligibility::RequiresConfirmation,
+                    Some(ConfirmationCause::SourceDisagreement),
+                ),
             };
-            ScenarioDate { date, eligibility }
+            ScenarioDate {
+                date,
+                eligibility,
+                confirmation,
+            }
         })
         .collect();
     let all_dates_rejected = if dates.is_empty() {
@@ -241,7 +267,7 @@ fn assess_listing<'a>(
         seating(&listing.capacity, attendees.get()),
         breakouts(listing, request.minimum_breakouts),
         budget.requirement,
-        accessibility(listing),
+        accessibility(listing, request.minimum_breakouts > 0),
         transport(&listing.station_access),
         quality(
             Criterion::Daylight,

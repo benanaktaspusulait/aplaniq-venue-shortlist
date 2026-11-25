@@ -1,4 +1,5 @@
 mod availability;
+mod charges;
 mod price;
 
 use std::num::NonZeroU32;
@@ -152,6 +153,7 @@ pub(super) fn normalize(
             fields.get("catering_included"),
             catering,
         ),
+        additional_charges: charges::from_notes(notes.as_deref()),
         accessibility: row.evidence(
             "wheelchair_accessible",
             fields.get("wheelchair_accessible"),
@@ -422,7 +424,7 @@ fn daylight(value: &Value) -> Result<Quality, Issue> {
     match text(value)?.to_ascii_lowercase().as_str() {
         "yes" => Ok(Quality::Acceptable),
         "yes, skylights" | "yes, fully glazed" | "yes, greenhouse" => Ok(Quality::Strong),
-        "no" | "no windows in plenary" => Ok(Quality::Unacceptable),
+        "no" | "dark" | "no windows in plenary" => Ok(Quality::Unacceptable),
         "partial" | "limited" => Ok(Quality::Partial),
         "unknown" => Err((Unknown, "daylight is unconfirmed")),
         label if label.starts_with("mixed ") => Ok(Quality::Partial),

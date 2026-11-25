@@ -61,27 +61,21 @@ pub(super) fn assess(venue: &Venue, ceiling: &Money, attendees: u32) -> BudgetAs
     if venue.catering != Evidence::Known(CateringStatus::Included) {
         gaps.push(BudgetGap::Catering);
     }
-    if venue.notes.as_deref().is_some_and(|notes| {
-        let lower = notes.to_ascii_lowercase();
-        lower.contains("mandatory fee")
-            || lower.contains("mandatory charge")
-            || lower.contains("mandatory av fee")
-            || lower.contains("mandatory surcharge")
-            || lower.contains("catering mandatory")
-            || lower.contains("mandatory catering")
-            || lower.contains("catering not included")
-            || lower.contains("catering is not included")
-    }) {
+    if venue.additional_charges.unresolved {
         gaps.push(BudgetGap::MandatoryFees);
     }
-
+    let charge = if ceiling.currency == Currency::Eur {
+        venue.additional_charges.minimum_eur
+    } else {
+        None
+    };
     let Evidence::Known(price) = &venue.price else {
         gaps.push(BudgetGap::Amount);
-        return unresolved(CostEvidence::Unknown, gaps);
+        return with_floor(charge, ceiling, gaps, None);
     };
     if ceiling.currency != Currency::Eur || price.currency != Evidence::Known(Currency::Eur) {
         gaps.push(BudgetGap::Currency);
-        return unresolved(CostEvidence::Unknown, gaps);
+        return with_floor(charge, ceiling, gaps, None);
     }
     if price.vat != Evidence::Known(VatStatus::Included) {
         gaps.push(BudgetGap::Vat);
@@ -116,7 +110,7 @@ pub(super) fn assess(venue: &Venue, ceiling: &Money, attendees: u32) -> BudgetAs
                         "The firm rate exceeds the budget and representable monetary range.",
                     );
                 }
-                return with_floor(minimum, ceiling, gaps, None);
+                return include_charge(minimum, charge, ceiling, gaps, None);
             };
             Some(rate)
         }
@@ -131,7 +125,32 @@ pub(super) fn assess(venue: &Venue, ceiling: &Money, attendees: u32) -> BudgetAs
         .into_iter()
         .chain(firm_rate)
         .max_by_key(|amount| amount.get());
-    if let Some(total) = lower_bound.filter(|_| gaps.is_empty()) {
+    include_charge(lower_bound, charge, ceiling, gaps, rate)
+}
+
+fn include_charge(
+    base: Option<MinorUnits>,
+    charge: Option<MinorUnits>,
+    ceiling: &Money,
+    mut gaps: Vec<BudgetGap>,
+    rate: Option<MinorUnits>,
+) -> BudgetAssessment {
+    let floor = match (base, charge) {
+        (Some(base), Some(charge)) => {
+            let Some(total) = base.get().checked_add(charge.get()) else {
+                gaps.push(BudgetGap::Overflow);
+                return result(
+                    CostEvidence::Unknown,
+                    gaps,
+                    Violated,
+                    "The mandatory total exceeds the budget and representable monetary range.",
+                );
+            };
+            Some(MinorUnits::new(total))
+        }
+        (base, charge) => base.or(charge),
+    };
+    if let Some(total) = floor.filter(|_| gaps.is_empty()) {
         let (outcome, reason) = if total.get() > ceiling.minor_units.get() {
             (Violated, "The comparable total exceeds the budget.")
         } else {
@@ -139,7 +158,7 @@ pub(super) fn assess(venue: &Venue, ceiling: &Money, attendees: u32) -> BudgetAs
         };
         return result(CostEvidence::Complete(total), gaps, outcome, reason);
     }
-    with_floor(lower_bound, ceiling, gaps, rate)
+    with_floor(floor, ceiling, gaps, rate)
 }
 
 fn with_floor(

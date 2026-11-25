@@ -109,18 +109,7 @@ fn parse(
         }
         _ => return Err((Unsupported, "unrecognised booking restriction")),
     }
-    result
-        .rules
-        .push(rule(start, end, Some(days.to_vec()), Available)?);
-    if only {
-        let other_days = WEEKDAYS
-            .into_iter()
-            .filter(|day| !days.contains(day))
-            .collect();
-        result
-            .rules
-            .push(rule(start, end, Some(other_days), Unavailable)?);
-    }
+    append_weekday_rules(&mut result.rules, start, end, days, only)?;
     Ok(result)
 }
 
@@ -144,21 +133,36 @@ fn parse_march_restriction(
     }
     let (pattern, exceptions) = details
         .split_once(", except ")
-        .ok_or((Unsupported, "unrecognised March restriction"))?;
+        .map_or((details, None), |(pattern, dates)| (pattern, Some(dates)));
     let days = pattern
         .strip_suffix(" only")
         .and_then(weekday_pattern)
         .ok_or((Unsupported, "unrecognised March weekday restriction"))?;
-    for date in except_dates(year, exceptions)? {
-        rules.push(exact(date, Unavailable)?);
+    if let Some(exceptions) = exceptions {
+        for date in except_dates(year, exceptions)? {
+            rules.push(exact(date, Unavailable)?);
+        }
     }
-    let other_days = WEEKDAYS
-        .into_iter()
-        .filter(|day| !days.contains(day))
-        .collect();
-    rules.push(rule(start, end, Some(days.to_vec()), Available)?);
-    rules.push(rule(start, end, Some(other_days), Unavailable)?);
+    append_weekday_rules(&mut rules, start, end, days, true)?;
     Ok(rules)
+}
+
+fn append_weekday_rules(
+    rules: &mut Vec<AvailabilityRule>,
+    start: NaiveDate,
+    end: NaiveDate,
+    days: &[Weekday],
+    only: bool,
+) -> Result<(), Issue> {
+    rules.push(rule(start, end, Some(days.to_vec()), Available)?);
+    if only {
+        let other_days = WEEKDAYS
+            .into_iter()
+            .filter(|day| !days.contains(day))
+            .collect();
+        rules.push(rule(start, end, Some(other_days), Unavailable)?);
+    }
+    Ok(())
 }
 
 fn parse_dated_weekdays(

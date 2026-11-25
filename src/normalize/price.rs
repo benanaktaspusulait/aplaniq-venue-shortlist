@@ -85,7 +85,7 @@ fn amount(value: &Value) -> Result<MinorUnits, Issue> {
     decimal_minor_units(label)
 }
 
-fn decimal_minor_units(text: &str) -> Result<MinorUnits, Issue> {
+pub(super) fn decimal_minor_units(text: &str) -> Result<MinorUnits, Issue> {
     let (whole, fraction) = match text.split_once('.') {
         Some((whole, fraction)) if digits(fraction) => (whole, fraction.trim_end_matches('0')),
         Some(_) => return Err((Invalid, "invalid decimal fraction")),

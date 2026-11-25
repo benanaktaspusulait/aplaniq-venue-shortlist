@@ -15,7 +15,7 @@ use venue_shortlist::{
         MinorUnits,
     },
     evaluate::{
-        BudgetGap, CostEvidence, RequirementAssessment,
+        BudgetGap, ConfirmationCause, CostEvidence, RequirementAssessment,
         RequirementOutcome::{Satisfied, Uncertain, Violated},
         ScenarioAssessment, VenueAssessment, assess_venues, partner_day_request,
     },
@@ -202,6 +202,17 @@ fn accessibility_needs_room_scope_and_keeps_explicit_failures() {
             Uncertain,
         ),
         (json!("breakout rooms are stairs-only"), "", Violated),
+        (
+            json!("yes, except all breakout rooms are stairs-only"),
+            "",
+            Violated,
+        ),
+        (json!("yes, except plenary is stairs-only"), "", Violated),
+        (
+            json!("yes, except some breakout rooms are stairs-only"),
+            "",
+            Uncertain,
+        ),
     ] {
         let mut row = venue("access");
         row["wheelchair_accessible"] = access;
@@ -219,6 +230,21 @@ fn accessibility_needs_room_scope_and_keeps_explicit_failures() {
 fn availability_distinguishes_exclusions_from_unconfirmed_days() {
     for (source, expected, overall) in [
         ("Thu 11 March", [Satisfied, Uncertain, Uncertain], Eligible),
+        (
+            "March 2027: Thursdays only",
+            [Satisfied, Violated, Satisfied],
+            Eligible,
+        ),
+        (
+            "Thursdays only March 2027",
+            [Satisfied, Violated, Satisfied],
+            Eligible,
+        ),
+        (
+            "March 2027: Tuesday only",
+            [Violated, Satisfied, Violated],
+            Eligible,
+        ),
         (
             "Tue only March 2027",
             [Violated, Satisfied, Violated],
@@ -264,6 +290,12 @@ fn availability_distinguishes_exclusions_from_unconfirmed_days() {
                 .collect::<Vec<_>>();
             assert_eq!(observed, expected, "{source}");
             assert_eq!(scenario.eligibility, overall, "{source}");
+            if source == "unknown" {
+                assert_eq!(
+                    scenario.dates[0].confirmation,
+                    Some(ConfirmationCause::ListingEvidence)
+                );
+            }
         });
     }
     let mut row = venue("notice");
@@ -351,6 +383,10 @@ fn duplicate_configurations_never_lend_each_other_passing_fields_or_dates() {
         assert_eq!(result[0].primary.eligibility, RequiresConfirmation);
         let dates = &result[0].primary.dates;
         assert_eq!(
+            dates[0].confirmation,
+            Some(ConfirmationCause::SourceDisagreement)
+        );
+        assert_eq!(
             dates.iter().map(|day| day.eligibility).collect::<Vec<_>>(),
             [RequiresConfirmation, RequiresConfirmation, Rejected,]
         );
@@ -375,6 +411,10 @@ fn links_potential_duplicates_without_transferring_adverse_evidence() {
         assert_eq!(result[0].primary.eligibility, Rejected);
         assert_eq!(result[1].primary.eligibility, RequiresConfirmation);
         assert_eq!(result[1].potential_duplicates.len(), 1);
+        assert_eq!(
+            result[1].primary.dates[0].confirmation,
+            Some(ConfirmationCause::PotentialDuplicate)
+        );
         assert_eq!(rule(&result[1].primary, Criterion::Wifi).outcome, Satisfied);
         assert_eq!(result[2].primary.eligibility, Eligible);
         let indices = result
@@ -506,4 +546,62 @@ fn summary_reasons(scenario: &ScenarioAssessment<'_>, potential: bool) -> Vec<St
         reasons.insert("Identity".to_owned());
     }
     reasons.into_iter().collect()
+}
+
+#[test]
+fn r3_mandatory_charges_change_the_budget_without_guessing_costs() {
+    for (note, expected, cost) in [
+        (
+            "An additional AV rental fee is required and costs €300.",
+            Rejected,
+            CostEvidence::Minimum(MinorUnits::new(1_520_000)),
+        ),
+        (
+            "An additional AV rental fee is required.",
+            RequiresConfirmation,
+            CostEvidence::Minimum(MinorUnits::new(1_490_000)),
+        ),
+        (
+            "An additional AV rental fee is required and costs €100 including VAT.",
+            Eligible,
+            CostEvidence::Complete(MinorUnits::new(1_500_000)),
+        ),
+        (
+            "A mandatory additional AV fee costs about €300.",
+            RequiresConfirmation,
+            CostEvidence::Minimum(MinorUnits::new(1_490_000)),
+        ),
+        (
+            "There are no mandatory fees.",
+            Eligible,
+            CostEvidence::Complete(MinorUnits::new(1_490_000)),
+        ),
+        (
+            "An optional AV rental fee costs €300. Catering is mandatory and costs extra.",
+            RequiresConfirmation,
+            CostEvidence::Minimum(MinorUnits::new(1_490_000)),
+        ),
+    ] {
+        let mut row = venue("r3-fee");
+        row["price"]["amount"] = json!(14900);
+        row["notes"] = json!(note);
+        with_rows(&[row], |result| {
+            let scenario = &result[0].primary;
+            assert_eq!(scenario.eligibility, expected, "{note}");
+            assert_eq!(scenario.listings[0].budget.cost, cost, "{note}");
+        });
+    }
+}
+
+#[test]
+fn r3_explicit_darkness_fails_even_with_other_suitable_evidence() {
+    let mut row = venue("r3-dark");
+    row["daylight"] = json!("dark");
+    with_rows(&[row], |result| {
+        assert_eq!(result[0].primary.eligibility, Rejected);
+        assert_eq!(
+            rule(&result[0].primary, Criterion::Daylight).outcome,
+            Violated
+        );
+    });
 }

@@ -95,6 +95,8 @@ pub struct Venue {
     pub price: Evidence<Price>,
     /// Catering evidence independent of the quote.
     pub catering: Evidence<CateringStatus>,
+    /// Additional mandatory cost evidence from the listing notes.
+    pub additional_charges: AdditionalCharges,
     /// Source claims about wheelchair access.
     pub accessibility: Evidence<Accessibility>,
     /// Reported booking calendar and restrictions.
@@ -198,6 +200,15 @@ pub struct Breakouts {
     pub count: CountRange,
     /// Source caveat about which rooms are included.
     pub qualification: Option<String>,
+}
+
+/// Mandatory charges outside the quoted price.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct AdditionalCharges {
+    /// Known minimum additional amount in EUR, if supported.
+    pub minimum_eur: Option<MinorUnits>,
+    /// Whether the charges, their scope or their VAT treatment need confirmation.
+    pub unresolved: bool,
 }
 
 /// Currency of a monetary claim without conversion.
@@ -510,6 +521,7 @@ mod tests {
             breakouts: Evidence::Missing,
             price: Evidence::Unknown,
             catering: Evidence::Known(CateringStatus::Included),
+            additional_charges: AdditionalCharges::default(),
             accessibility: Evidence::Missing,
             availability: Evidence::Missing,
             station_access: StationAccess {

@@ -99,7 +99,7 @@ pub(super) fn breakouts(venue: &Venue, minimum: u32) -> RequirementAssessment {
     }
 }
 
-pub(super) fn accessibility(venue: &Venue) -> RequirementAssessment {
+pub(super) fn accessibility(venue: &Venue, requires_breakouts: bool) -> RequirementAssessment {
     use Criterion::Accessibility as Rule;
     let scoped_claim = match &venue.accessibility {
         Evidence::Known(Accessibility::Partial(text)) => Some(text.as_str()),
@@ -109,7 +109,7 @@ pub(super) fn accessibility(venue: &Venue) -> RequirementAssessment {
         .into_iter()
         .flatten()
         .flat_map(|text| text.split([',', ';', '.', '\n']))
-        .filter_map(room_access_restriction)
+        .filter_map(|clause| room_access_restriction(clause, requires_breakouts))
         .fold(None, |worst, next| match (worst, next) {
             (Some(Violated), _) | (_, Violated) => Some(Violated),
             _ => Some(Uncertain),
@@ -154,9 +154,14 @@ pub(super) fn accessibility(venue: &Venue) -> RequirementAssessment {
     check(Rule, outcome, reason)
 }
 
-fn room_access_restriction(clause: &str) -> Option<super::RequirementOutcome> {
-    let clause = clause.to_ascii_lowercase();
-    let event_space = clause.contains("plenary") || clause.contains("breakout");
+fn room_access_restriction(
+    clause: &str,
+    requires_breakouts: bool,
+) -> Option<super::RequirementOutcome> {
+    let clause = clause.trim().to_ascii_lowercase();
+    let claim = clause.strip_prefix("except ").unwrap_or(&clause);
+    let plenary = claim.contains("plenary");
+    let breakouts = requires_breakouts && claim.contains("breakout");
     let restriction = [
         "stairs only",
         "stairs-only",
@@ -166,21 +171,20 @@ fn room_access_restriction(clause: &str) -> Option<super::RequirementOutcome> {
         "no step-free access",
     ]
     .iter()
-    .any(|claim| clause.contains(claim));
-    if !event_space || !restriction || clause.contains("not inaccessible") {
+    .any(|restriction| claim.contains(restriction));
+    if !(plenary || breakouts) || !restriction || claim.contains("not inaccessible") {
         return None;
     }
-    let limited_scope = [
-        "some ",
-        "one ",
-        "optional ",
-        "except ",
-        "spare ",
-        "alternative ",
-    ]
-    .iter()
-    .any(|qualifier| clause.contains(qualifier));
-    Some(if limited_scope { Uncertain } else { Violated })
+    let limited_scope = ["some ", "one ", "optional ", "spare ", "alternative "]
+        .iter()
+        .any(|qualifier| claim.contains(qualifier));
+    let ambiguous_exception =
+        clause.starts_with("except ") && !plenary && !claim.starts_with("all breakout");
+    Some(if limited_scope || ambiguous_exception {
+        Uncertain
+    } else {
+        Violated
+    })
 }
 
 pub(super) fn availability(
