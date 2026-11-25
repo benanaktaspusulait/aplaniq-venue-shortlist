@@ -13,6 +13,7 @@ This is the implementation backlog. It is based on both pages of the original as
 | [TASK-005](TASK-005-eligibility.md) | Hard requirements and criterion-level results | 003, 004, R2 | 27 min |
 | [TASK-006](TASK-006-ranking.md) | Deterministic ranking and recommendation reasons | 005 | 9 min |
 | [TASK-007](TASK-007-cli.md) | Local CLI, report and first documented invocation | 006, R3 | 13 min |
+| [TASK-007B](TASK-007B-docker-packaging.md) | Optional local container packaging | 007 | 10 min optional |
 | [TASK-008](TASK-008-validation.md) | Integration and original-dataset validation | 007 | 12 min |
 | [TASK-009](TASK-009-code-review.md) | R4 final independent review and targeted fixes | 008 | 12 min |
 | [TASK-010](TASK-010-submission.md) | Final checks and private-submission handoff | 009 | 8 min |
@@ -27,11 +28,12 @@ flowchart LR
     T005 --> T006["006 Ranking"]
     T006 --> R3["R3 Business logic and ranking"] --> T007["007 CLI"]
     T007 --> T008["008 Validation"]
+    T007 -.-> T007B["007B Optional Docker"] -.-> T008
     T008 --> T009["009 / R4 Final independent review"]
     T009 --> T010["010 Submission"]
 ```
 
-Follow numerical order for completed deliverables. Once TASK-001 defines the scenario and policies, the integration fixture and expected results can be drafted alongside the core work. Once the report contract is agreed, CLI argument and rendering tests can be drafted before the full pipeline is wired. Complete and verify each task after its dependencies.
+Follow numerical order for completed deliverables. Once TASK-001 defines the scenario and policies, the integration fixture and expected results can be drafted alongside the core work. Once the report contract is agreed, CLI argument and rendering tests can be drafted before the full pipeline is wired. Complete and verify each task after its dependencies. If time permits, schedule TASK-007B between TASK-007 and TASK-008. Native validation can proceed without TASK-007B.
 
 ## Engineering review checkpoints
 

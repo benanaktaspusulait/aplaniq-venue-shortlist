@@ -72,3 +72,5 @@ TASK-002 uses `chrono` 0.4.45 as its sole direct dependency for validated dates 
 ## Implementation and review sequence
 
 Use the [backlog and review checkpoints](tasks/README.md#engineering-review-checkpoints). Review the domain before ingestion (R1), data processing after deduplication (R2), hard rules and ranking after TASK-006 (R3), and the complete pipeline after end-to-end validation (R4, TASK-009). Verify each checkpoint against actual diffs, tests, business decisions, architecture and history. Keep findings and verified corrections in the assessment log.
+
+The native CLI is the primary deliverable. [TASK-007B](tasks/TASK-007B-docker-packaging.md) can add a local container after the CLI and before end-to-end validation. The same external input and CLI arguments apply, and the native workflow has no Docker dependency.
