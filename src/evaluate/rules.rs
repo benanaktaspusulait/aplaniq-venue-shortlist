@@ -34,6 +34,11 @@ pub(super) fn seating(capacity: &Evidence<Capacity>, attendees: u32) -> Requirem
                     Uncertain,
                     "Confirm the layout and seated capacity within the reported range.",
                 )
+            } else if capacity.unresolved_layouts {
+                (
+                    Uncertain,
+                    "Confirm whether an unresolved layout supports the headcount.",
+                )
             } else {
                 (
                     Violated,
@@ -348,6 +353,7 @@ mod tests {
                 .unwrap(),
             ],
             standing: NonZeroU32::new(150),
+            unresolved_layouts: false,
         });
         assert_eq!(seating(&capacity, 80).outcome, Satisfied);
         assert_eq!(seating(&capacity, 120).outcome, Uncertain);

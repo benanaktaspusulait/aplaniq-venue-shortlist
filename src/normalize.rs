@@ -159,7 +159,7 @@ pub(super) fn normalize(
             text(value).map(str::to_owned)
         }),
         sources: vec![row.source(None)],
-        capacity: row.evidence("capacity", fields.get("capacity"), capacity),
+        capacity: capacity_evidence(row, fields.get("capacity")),
         breakouts: row.evidence("breakout_rooms", fields.get("breakout_rooms"), breakouts),
         price: price::normalize(row, fields.get("price")),
         catering: row.evidence(
@@ -234,27 +234,52 @@ fn seats(layout: SeatingLayout, range: CountRange) -> Result<SeatedCapacity, Iss
     .ok_or((Invalid, "seated capacity range is reversed"))
 }
 
+fn capacity_evidence(row: &mut Row<'_, '_>, value: Option<&Value>) -> Evidence<Capacity> {
+    let Some(object) = value.and_then(Value::as_object) else {
+        return row.evidence("capacity", value, capacity);
+    };
+    let mut reported = Vec::new();
+    let mut unresolved = Vec::new();
+    for (field, value) in object {
+        match configured_seats(field, value) {
+            Ok(seats) => reported.push(seats),
+            Err(issue) => unresolved.push((field, value, issue)),
+        }
+    }
+    if reported.is_empty() {
+        let issue = unresolved
+            .first()
+            .map_or((Invalid, "room configuration is empty"), |entry| entry.2);
+        return row.evidence("capacity", value, |_| Err(issue));
+    }
+    let unresolved_layouts = !unresolved.is_empty();
+    for (field, value, issue) in unresolved {
+        row.flag(Some(&format!("capacity.{field}")), issue, Some(value));
+    }
+    Evidence::Known(Capacity {
+        seated: reported,
+        standing: None,
+        unresolved_layouts,
+    })
+}
+
+fn configured_seats(field: &str, value: &Value) -> Result<SeatedCapacity, Issue> {
+    let layout = match field {
+        "plenary_theatre" => SeatingLayout::Theatre,
+        "plenary_cabaret" => SeatingLayout::Cabaret,
+        _ => return Err((Unsupported, "unrecognised room configuration")),
+    };
+    let count = whole(value)?;
+    seats(layout, bounds(count, count)?)
+}
+
 fn capacity(value: &Value) -> Result<Capacity, Issue> {
     let mut result = Capacity {
         seated: Vec::new(),
         standing: None,
+        unresolved_layouts: false,
     };
 
-    if let Some(object) = value.as_object() {
-        for (key, value) in object {
-            let layout = match key.as_str() {
-                "plenary_theatre" => SeatingLayout::Theatre,
-                "plenary_cabaret" => SeatingLayout::Cabaret,
-                _ => return Err((Unsupported, "unrecognised room configuration")),
-            };
-            let n = whole(value)?;
-            result.seated.push(seats(layout, bounds(n, n)?)?);
-        }
-        if result.seated.is_empty() {
-            return Err((Invalid, "room configuration is empty"));
-        }
-        return Ok(result);
-    }
     if value.is_number() {
         let n = whole(value)?;
         result

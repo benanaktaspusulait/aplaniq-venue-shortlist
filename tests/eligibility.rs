@@ -756,3 +756,42 @@ fn explicit_required_room_restrictions_survive_normalisation() {
         });
     }
 }
+
+#[test]
+fn mixed_capacity_layouts_preserve_valid_seats_and_report_unresolved_layouts() {
+    for (capacity, verdict, diagnostic_field) in [
+        (
+            json!({"plenary_theatre":120,"plenary_boardroom":56}),
+            Eligible,
+            "capacity.plenary_boardroom",
+        ),
+        (
+            json!({"plenary_theatre":85,"plenary_cabaret":null}),
+            Eligible,
+            "capacity.plenary_cabaret",
+        ),
+        (
+            json!({"plenary_theatre":60,"plenary_cabaret":null}),
+            RequiresConfirmation,
+            "capacity.plenary_cabaret",
+        ),
+        (
+            json!({"plenary_boardroom":56}),
+            RequiresConfirmation,
+            "capacity",
+        ),
+    ] {
+        let mut row = venue("mixed-layouts");
+        row["capacity"] = capacity;
+        let report = parse_venues(&json!({"venues": [row]}).to_string(), Some(2027)).unwrap();
+        let groups = deduplicate(&report);
+        let assessment = assess_venues(&groups, &partner_day_request());
+        assert_eq!(assessment[0].primary.eligibility, verdict);
+        assert!(
+            report
+                .diagnostics
+                .iter()
+                .any(|diagnostic| { diagnostic.source.field.as_deref() == Some(diagnostic_field) })
+        );
+    }
+}

@@ -123,6 +123,7 @@ pub struct Capacity {
     pub seated: Vec<SeatedCapacity>,
     /// Reported standing count, separate from seating.
     pub standing: Option<NonZeroU32>,
+    pub(crate) unresolved_layouts: bool,
 }
 
 /// Room arrangement associated with a seated count.
