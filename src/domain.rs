@@ -64,6 +64,7 @@ pub struct Venue {
     pub capacity: Evidence<Capacity>,
     pub breakouts: Evidence<Breakouts>,
     pub price: Evidence<Price>,
+    pub catering: Evidence<CateringStatus>,
     pub accessibility: Evidence<Accessibility>,
     pub availability: Evidence<Availability>,
     pub station_access: Evidence<StationAccess>,
@@ -173,8 +174,7 @@ pub struct Price {
     pub basis: PriceBasis,
     pub kind: PriceKind,
     pub vat: VatStatus,
-    pub catering: CateringStatus,
-    pub minimum_spend: Option<Money>,
+    pub minimum_spend: Evidence<MinorUnits>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -203,7 +203,6 @@ pub enum CateringStatus {
     Included,
     Excluded,
     Partial,
-    Unknown,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -345,6 +344,53 @@ mod tests {
         assert_eq!(no_rooms.maximum(), 0);
         assert!(CountRange::new(6, 4).is_none());
         assert_ne!(Evidence::Known(no_rooms), Evidence::Missing);
+    }
+
+    #[test]
+    fn catering_can_be_known_when_the_price_is_on_request() {
+        let venue = Venue {
+            id: VenueId::new("sample".to_owned()).unwrap(),
+            name: "Sample venue".to_owned(),
+            city: None,
+            sources: Vec::new(),
+            capacity: Evidence::Missing,
+            breakouts: Evidence::Missing,
+            price: Evidence::Unknown,
+            catering: Evidence::Known(CateringStatus::Included),
+            accessibility: Evidence::Missing,
+            availability: Evidence::Missing,
+            station_access: Evidence::Missing,
+            daylight: Evidence::Missing,
+            wifi: Evidence::Missing,
+            notes: None,
+        };
+
+        assert_eq!(venue.price, Evidence::Unknown);
+        assert_eq!(venue.catering, Evidence::Known(CateringStatus::Included));
+    }
+
+    #[test]
+    fn invalid_minimum_spend_is_distinct_from_an_absent_floor() {
+        let price = Price {
+            amount: Money {
+                currency: Currency::Eur,
+                minor_units: MinorUnits::new(9_500),
+            },
+            basis: PriceBasis::PerPerson,
+            kind: PriceKind::Quoted,
+            vat: VatStatus::Excluded,
+            minimum_spend: Evidence::Invalid {
+                raw: "-100".to_owned(),
+            },
+        };
+
+        assert_ne!(price.minimum_spend, Evidence::Missing);
+        assert_eq!(
+            price.minimum_spend,
+            Evidence::Invalid {
+                raw: "-100".to_owned()
+            }
+        );
     }
 
     #[test]
