@@ -12,6 +12,7 @@ pub(super) fn from_notes(notes: Option<&str>) -> AdditionalCharges {
         .to_ascii_lowercase()
         .split([';', '\n'])
         .flat_map(|line| line.split(". "))
+        .flat_map(charge_clauses)
     {
         if !required_charge(sentence) {
             continue;
@@ -32,6 +33,32 @@ pub(super) fn from_notes(notes: Option<&str>) -> AdditionalCharges {
     charges
 }
 
+fn charge_clauses(sentence: &str) -> impl Iterator<Item = &str> {
+    // Separate a waived or optional item from a compulsory cost on either side.
+    // Keep dependent wording such as "is required and costs €300" intact.
+    let split = [" but ", " and "]
+        .into_iter()
+        .flat_map(|join| sentence.match_indices(join))
+        .filter_map(|(start, join)| {
+            let left = sentence.get(..start)?;
+            let right = sentence.get(start + join.len()..)?;
+            let independent = join == " but "
+                || ["a ", "an ", "the ", "catering "]
+                    .iter()
+                    .any(|prefix| right.starts_with(prefix));
+            independent.then_some((left, right))
+        })
+        .find(
+            |(left, right)| match (negated_charge(left), negated_charge(right)) {
+                (true, false) => required_charge(right),
+                (false, true) => required_charge(left),
+                _ => false,
+            },
+        );
+    let (first, second) = split.map_or((sentence, None), |(left, right)| (left, Some(right)));
+    std::iter::once(first).chain(second)
+}
+
 fn required_charge(sentence: &str) -> bool {
     let cost = ["fee", "charge", "surcharge", "catering", "rental", "cost"]
         .iter()
@@ -40,7 +67,11 @@ fn required_charge(sentence: &str) -> bool {
         || sentence.contains("required")
         || sentence.contains("catering not included")
         || sentence.contains("catering is not included");
-    let negated = [
+    cost && required && (!negated_charge(sentence) || sentence.contains(" except "))
+}
+
+fn negated_charge(sentence: &str) -> bool {
+    [
         "no mandatory",
         "no required",
         "not mandatory",
@@ -48,8 +79,7 @@ fn required_charge(sentence: &str) -> bool {
         "optional",
     ]
     .iter()
-    .any(|term| sentence.contains(term));
-    cost && required && (!negated || sentence.contains(" except "))
+    .any(|term| sentence.contains(term))
 }
 
 fn fixed_eur_amount(sentence: &str) -> Option<MinorUnits> {

@@ -605,3 +605,48 @@ fn r3_explicit_darkness_fails_even_with_other_suitable_evidence() {
         );
     });
 }
+
+#[test]
+fn optional_items_do_not_hide_mandatory_charges_in_the_same_sentence() {
+    for (note, expected, cost) in [
+        (
+            "The screen is optional but a required additional AV fee costs €300 including VAT.",
+            Rejected,
+            CostEvidence::Complete(MinorUnits::new(1_520_000)),
+        ),
+        (
+            "An optional screen costs €50 and a required additional AV fee costs €300.",
+            Rejected,
+            CostEvidence::Minimum(MinorUnits::new(1_520_000)),
+        ),
+        (
+            "A required additional AV fee costs €100 including VAT and an optional screen costs €50.",
+            Eligible,
+            CostEvidence::Complete(MinorUnits::new(1_500_000)),
+        ),
+        (
+            "An additional AV fee is required and costs €300 including VAT and an optional screen costs €50.",
+            Rejected,
+            CostEvidence::Complete(MinorUnits::new(1_520_000)),
+        ),
+        (
+            "The screen is optional but the additional AV fee is required.",
+            RequiresConfirmation,
+            CostEvidence::Minimum(MinorUnits::new(1_490_000)),
+        ),
+        (
+            "The AV fee is not required and costs €300 when requested.",
+            Eligible,
+            CostEvidence::Complete(MinorUnits::new(1_490_000)),
+        ),
+    ] {
+        let mut row = venue("r4-fee");
+        row["price"]["amount"] = json!(14900);
+        row["notes"] = json!(note);
+        with_rows(&[row], |result| {
+            let scenario = &result[0].primary;
+            assert_eq!(scenario.eligibility, expected, "{note}");
+            assert_eq!(scenario.listings[0].budget.cost, cost, "{note}");
+        });
+    }
+}
