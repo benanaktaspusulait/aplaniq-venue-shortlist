@@ -3,7 +3,7 @@
 mod budget;
 mod rules;
 
-use std::num::NonZeroU32;
+use std::{collections::BTreeMap, num::NonZeroU32};
 
 use chrono::{NaiveDate, Weekday};
 
@@ -146,19 +146,39 @@ pub fn assess_venues<'a>(
     dates.sort_unstable();
     dates.dedup();
 
+    let mut pairs_by_source = BTreeMap::<_, Vec<_>>::new();
+    for (index, pair) in deduplication.potential_duplicates.iter().enumerate() {
+        for listing in [pair.left, pair.right] {
+            pairs_by_source
+                .entry(first_source_index(listing))
+                .or_default()
+                .push((index, pair));
+        }
+    }
     deduplication
         .entities
         .iter()
         .map(|entity| {
-            let potential_duplicates: Vec<_> = deduplication
-                .potential_duplicates
+            let mut matched_pairs: Vec<_> = entity
+                .listings()
                 .iter()
-                .filter(|pair| {
-                    entity.listings().iter().any(|listing| {
-                        std::ptr::eq(*listing, pair.left) || std::ptr::eq(*listing, pair.right)
-                    })
+                .flat_map(|listing| {
+                    pairs_by_source
+                        .get(&first_source_index(listing))
+                        .into_iter()
+                        .flatten()
+                        .filter(move |(_, pair)| {
+                            std::ptr::eq(*listing, pair.left) || std::ptr::eq(*listing, pair.right)
+                        })
+                        .copied()
                 })
                 .collect();
+            if entity.listings().len() > 1 {
+                matched_pairs.sort_unstable_by_key(|(index, _)| *index);
+            }
+            matched_pairs.dedup_by_key(|(index, _)| *index);
+            let potential_duplicates: Vec<_> =
+                matched_pairs.into_iter().map(|(_, pair)| pair).collect();
             let assess = |attendees| {
                 scenario(
                     entity,
@@ -178,6 +198,10 @@ pub fn assess_venues<'a>(
             }
         })
         .collect()
+}
+
+fn first_source_index(venue: &Venue) -> Option<usize> {
+    venue.sources.first().map(|source| source.record_index)
 }
 
 fn scenario<'a>(

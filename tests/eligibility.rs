@@ -795,3 +795,34 @@ fn mixed_capacity_layouts_preserve_valid_seats_and_report_unresolved_layouts() {
         );
     }
 }
+
+#[test]
+fn potential_duplicate_memberships_follow_global_pair_order_in_confirmed_groups() {
+    let rows: Vec<_> = ["a", "b", "a", "c"]
+        .into_iter()
+        .map(|id| {
+            let mut listing = venue(id);
+            listing["name"] = json!("Shared hall");
+            listing
+        })
+        .collect();
+    let report = parse_venues(&json!({"venues": rows}).to_string(), Some(2027)).unwrap();
+    let groups = deduplicate(&report);
+    assert_eq!(groups.entities.len(), 3);
+    assert_eq!(groups.potential_duplicates.len(), 5);
+    let assessments = assess_venues(&groups, &partner_day_request());
+    for entry in assessments {
+        let expected: Vec<_> =
+            groups
+                .potential_duplicates
+                .iter()
+                .filter(|pair| {
+                    entry.entity.listings().iter().any(|&venue| {
+                        std::ptr::eq(venue, pair.left) || std::ptr::eq(venue, pair.right)
+                    })
+                })
+                .collect();
+        assert_eq!(entry.potential_duplicates, expected);
+        assert_eq!(entry.primary.eligibility, RequiresConfirmation);
+    }
+}
