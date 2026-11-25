@@ -650,3 +650,26 @@ fn optional_items_do_not_hide_mandatory_charges_in_the_same_sentence() {
         });
     }
 }
+
+#[test]
+fn fee_vat_exclusions_and_conflicts_keep_the_all_in_cost_unconfirmed() {
+    for note in [
+        "An additional mandatory AV fee costs €100 not including VAT.",
+        "An additional mandatory AV fee costs €100 including VAT, but VAT is excluded.",
+        "An additional mandatory AV fee costs €100. VAT treatment is unknown.",
+    ] {
+        let mut row = venue("fee-vat");
+        row["price"]["amount"] = json!(14900);
+        row["notes"] = json!(note);
+        with_rows(&[row], |result| {
+            let scenario = &result[0].primary;
+            assert_eq!(scenario.eligibility, RequiresConfirmation, "{note}");
+            let budget = &scenario.listings[0].budget;
+            assert_eq!(
+                budget.cost,
+                CostEvidence::Minimum(MinorUnits::new(1_500_000))
+            );
+            assert!(budget.gaps.contains(&BudgetGap::MandatoryFees));
+        });
+    }
+}

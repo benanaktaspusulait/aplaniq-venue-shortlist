@@ -25,12 +25,30 @@ pub(super) fn from_notes(notes: Option<&str>) -> AdditionalCharges {
             .into_iter()
             .chain(amount)
             .max_by_key(|amount| amount.get());
-        charges.unresolved |= seen
-            || amount.is_none()
-            || !(sentence.contains("vat included") || sentence.contains("including vat"));
+        charges.unresolved |= seen || amount.is_none() || !includes_vat(sentence);
         seen = true;
     }
     charges
+}
+
+fn includes_vat(clause: &str) -> bool {
+    let inclusion = ["vat included", "including vat", "vat is included"];
+    let exclusions_or_qualifiers = [
+        "not including vat",
+        "not vat included",
+        "vat not included",
+        "vat is not included",
+        "excluding vat",
+        "vat excluded",
+        "vat is excluded",
+        "without vat",
+        "plus vat",
+        "vat treatment is unknown",
+    ];
+    inclusion.iter().any(|term| clause.contains(term))
+        && !exclusions_or_qualifiers
+            .iter()
+            .any(|term| clause.contains(term))
 }
 
 fn charge_clauses(sentence: &str) -> impl Iterator<Item = &str> {
