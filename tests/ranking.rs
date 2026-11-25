@@ -7,7 +7,7 @@ use serde_json::{Value, json};
 use venue_shortlist::{
     dedup::deduplicate,
     domain::{Eligibility, MinorUnits},
-    evaluate::{CostEvidence, VenueAssessment, assess_venues, partner_day_request},
+    evaluate::{CostEvidence, VenueAssessment, partner_day_request},
     ingest::{load_venues, parse_venues},
     rank::{QualityPreference, Shortlist, TransportPreference, rank_venues},
 };
@@ -27,8 +27,7 @@ fn with_shortlist(rows: &[Value], inspect: impl FnOnce(&Shortlist<'_>)) {
     let report = parse_venues(&json!({"venues": rows}).to_string(), Some(2027)).unwrap();
     let groups = deduplicate(&report);
     let request = partner_day_request();
-    let decisions = assess_venues(&groups, &request);
-    inspect(&rank_venues(decisions, &request));
+    inspect(&rank_venues(&groups, &request));
 }
 
 fn id<'a>(entry: &'a VenueAssessment<'_>) -> &'a str {
@@ -315,7 +314,7 @@ fn original_export_produces_the_verified_shortlist() {
     .unwrap();
     let groups = deduplicate(&report);
     let request = partner_day_request();
-    let run = || rank_venues(assess_venues(&groups, &request), &request);
+    let run = || rank_venues(&groups, &request);
     let result = run();
     assert_eq!(result, run());
     assert_eq!(eligible_ids(&result), ["v019", "v028", "v021"]);
@@ -331,4 +330,23 @@ fn original_export_produces_the_verified_shortlist() {
             facts
         );
     }
+}
+
+#[test]
+fn a_new_request_reassesses_eligibility_before_ranking() {
+    let input = parse_venues(&json!({"venues":[venue("fits")]}).to_string(), Some(2027)).unwrap();
+    let groups = deduplicate(&input);
+    let mut request = partner_day_request();
+    let report = rank_venues(&groups, &request);
+    assert_eq!(eligible_ids(&report), ["fits"]);
+    assert_eq!(
+        report.eligible[0].factors.budget_headroom,
+        Some(MinorUnits::new(500_000))
+    );
+    request.budget.minor_units = MinorUnits::new(999_999);
+    request.expansion_attendees = None;
+    let report = rank_venues(&groups, &request);
+    assert_eq!(report.eligible.as_slice(), []);
+    assert_eq!(report.rejected.len(), 1);
+    assert!(report.rejected[0].expansion.is_none());
 }

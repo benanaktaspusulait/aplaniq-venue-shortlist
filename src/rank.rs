@@ -5,10 +5,13 @@ use std::cmp::{Ordering, Reverse};
 use chrono::{Datelike, NaiveDate};
 
 use crate::{
+    dedup::Deduplication,
     domain::{
         Criterion, Currency, Eligibility, EventRequest, Evidence, MinorUnits, Quality, Venue,
     },
-    evaluate::{CostEvidence, ListingAssessment, RequirementOutcome, VenueAssessment},
+    evaluate::{
+        CostEvidence, ListingAssessment, RequirementOutcome, VenueAssessment, assess_venues,
+    },
 };
 
 /// Supported transport convenience in order of preference.
@@ -105,21 +108,18 @@ pub struct Shortlist<'a> {
     pub rejected: Vec<VenueAssessment<'a>>,
 }
 
-/// Ranks the primary scenario using the same event request used for eligibility.
+/// Assesses and ranks all venue entities using one event request.
 ///
 /// Hard verdicts are preserved. All eligible entries are returned so the caller
 /// can apply a presentation limit if required.
 #[must_use]
-pub fn rank_venues<'a>(
-    assessments: Vec<VenueAssessment<'a>>,
-    request: &EventRequest,
-) -> Shortlist<'a> {
+pub fn rank_venues<'a>(groups: &'a Deduplication<'a>, request: &EventRequest) -> Shortlist<'a> {
     let mut shortlist = Shortlist {
         eligible: Vec::new(),
         conditional: Vec::new(),
         rejected: Vec::new(),
     };
-    for assessment in assessments {
+    for assessment in assess_venues(groups, request) {
         match assessment.primary.eligibility {
             Eligibility::Eligible => shortlist.eligible.push(Recommendation {
                 rank: 0,

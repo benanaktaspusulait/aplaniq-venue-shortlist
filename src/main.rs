@@ -11,10 +11,7 @@ use std::{
 };
 
 use venue_shortlist::{
-    dedup::deduplicate,
-    evaluate::{assess_venues, partner_day_request},
-    ingest::load_venues,
-    rank::rank_venues,
+    dedup::deduplicate, evaluate::partner_day_request, ingest::load_venues, rank::rank_venues,
 };
 
 const HELP: &str = "AplanIQ Venue Shortlist
@@ -62,7 +59,7 @@ fn run(
     let year = request.candidate_dates.first().map(chrono::Datelike::year);
     let input = load_venues(path, year)?;
     let groups = deduplicate(&input);
-    let shortlist = rank_venues(assess_venues(&groups, &request), &request);
+    let shortlist = rank_venues(&groups, &request);
     report::write_report(out, &request, &groups, &shortlist)?;
     out.flush()?;
     report::write_diagnostics(diagnostics, &input.diagnostics)?;
