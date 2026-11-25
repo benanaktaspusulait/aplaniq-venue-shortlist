@@ -297,8 +297,9 @@ fn repeated_ids_with_distinct_claims_have_a_stable_secondary_key() {
             assert_eq!(
                 ordered_costs,
                 [
-                    CostEvidence::Complete(MinorUnits::new(20_000)),
+                    // Equivalent identity falls back to the numeric evidence in the quote.
                     CostEvidence::Complete(MinorUnits::new(5_000)),
+                    CostEvidence::Complete(MinorUnits::new(20_000)),
                 ]
             );
         });

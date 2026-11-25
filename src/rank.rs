@@ -241,13 +241,17 @@ fn identity_order(left: &VenueAssessment<'_>, right: &VenueAssessment<'_>) -> Or
         .min()
         .cmp(&right.iter().map(|venue| identity(venue)).min())
         .then_with(|| {
-            // When listing IDs collide, compare the fixed semantic fields before
-            // using source position. Raw JSON permutations cannot reorder distinct claims.
-            let mut left: Vec<_> = left.iter().map(|venue| configuration_key(venue)).collect();
-            let mut right: Vec<_> = right.iter().map(|venue| configuration_key(venue)).collect();
-            left.sort_unstable();
-            right.sort_unstable();
-            left.cmp(&right)
+            if let ([left], [right]) = (left, right) {
+                configuration_key(left).cmp(&configuration_key(right))
+            } else {
+                // Compare whole source configurations before falling back to row position.
+                let mut left: Vec<_> = left.iter().map(|venue| configuration_key(venue)).collect();
+                let mut right: Vec<_> =
+                    right.iter().map(|venue| configuration_key(venue)).collect();
+                left.sort_unstable();
+                right.sort_unstable();
+                left.cmp(&right)
+            }
         })
         .then_with(|| {
             let source_index = |venues: &[&Venue]| {
@@ -274,28 +278,26 @@ fn identity(venue: &Venue) -> (&str, &str, Option<&str>, Option<&str>) {
     )
 }
 
-fn configuration_key(venue: &Venue) -> String {
-    // These typed fields use stable scalar, string and sequence Debug forms.
-    format!(
-        "{:?}",
+fn configuration_key(venue: &Venue) -> impl Ord + '_ {
+    (
+        identity(venue),
+        &venue.address,
+        &venue.capacity,
+        &venue.breakouts,
+        &venue.price,
+        &venue.catering,
+        &venue.additional_charges,
+        &venue.accessibility,
+        &venue.room_access_restrictions,
+        &venue.availability,
+        &venue.station_access,
         (
-            identity(venue),
-            &venue.address,
-            &venue.capacity,
-            &venue.breakouts,
-            &venue.price,
-            &venue.catering,
-            &venue.accessibility,
-            &venue.availability,
-            &venue.station_access,
-            (
-                &venue.daylight,
-                &venue.daylight_qualification,
-                &venue.wifi,
-                &venue.wifi_qualification
-            ),
+            &venue.daylight,
+            &venue.daylight_qualification,
+            &venue.wifi,
+            &venue.wifi_qualification,
             &venue.notes,
-        )
+        ),
     )
 }
 

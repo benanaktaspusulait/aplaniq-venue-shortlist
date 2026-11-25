@@ -38,7 +38,7 @@ pub struct SourceRef {
 }
 
 /// The state of a listing claim before applying any shortlist rules.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Evidence<T> {
     /// The field supplied a supported typed claim.
     Known(T),
@@ -117,7 +117,7 @@ pub struct Venue {
 }
 
 /// Seated and standing capacities reported for the plenary.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Capacity {
     /// Reported seated capacities by room layout.
     pub seated: Vec<SeatedCapacity>,
@@ -127,7 +127,7 @@ pub struct Capacity {
 }
 
 /// Room arrangement associated with a seated count.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SeatingLayout {
     /// The source gave a capacity without naming a layout.
     Unspecified,
@@ -140,7 +140,7 @@ pub enum SeatingLayout {
 }
 
 /// Positive, inclusive seated capacity bounds for one layout.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SeatedCapacity {
     /// Seating arrangement for these counts.
     pub layout: SeatingLayout,
@@ -165,7 +165,7 @@ impl SeatedCapacity {
 }
 
 /// An inclusive count range. Zero is valid for breakout inventory.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CountRange {
     minimum: u32,
     maximum: u32,
@@ -196,7 +196,7 @@ impl CountRange {
 }
 
 /// Listed count of rooms and any caveat about their use.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Breakouts {
     /// Inclusive bounds on the listed room count.
     pub count: CountRange,
@@ -205,7 +205,7 @@ pub struct Breakouts {
 }
 
 /// Mandatory charges outside the quoted price.
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AdditionalCharges {
     /// Known minimum additional amount in EUR, if supported.
     pub minimum_eur: Option<MinorUnits>,
@@ -214,7 +214,7 @@ pub struct AdditionalCharges {
 }
 
 /// Currency of a monetary claim without conversion.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Currency {
     /// Euro.
     Eur,
@@ -225,7 +225,7 @@ pub enum Currency {
 }
 
 /// An exact nonnegative monetary amount in the currency's minor units.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MinorUnits(u64);
 
 impl MinorUnits {
@@ -257,7 +257,7 @@ pub struct Money {
 }
 
 /// Independently reported facts about a rate and any spending floor.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Price {
     /// Amount for the given pricing basis.
     pub amount: Evidence<MinorUnits>,
@@ -274,7 +274,7 @@ pub struct Price {
 }
 
 /// Unit to which a quoted amount applies.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum PriceBasis {
     /// Rate for one attendee.
     PerPerson,
@@ -285,7 +285,7 @@ pub enum PriceBasis {
 }
 
 /// Strength and interpretation of the monetary evidence.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum PriceKind {
     /// Stated rate or quote, possibly with unresolved components.
     Quoted,
@@ -296,7 +296,7 @@ pub enum PriceKind {
 }
 
 /// Whether the quoted amount already includes VAT.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum VatStatus {
     /// VAT is included in the amount.
     Included,
@@ -305,7 +305,7 @@ pub enum VatStatus {
 }
 
 /// Catering inclusion reported independently of a price.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CateringStatus {
     /// Catering is listed as included.
     Included,
@@ -324,7 +324,7 @@ pub(crate) enum RoomAccessRestriction {
 }
 
 /// Wheelchair access reported by a listing.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Accessibility {
     /// A positive listing claim, subject to booking verification.
     ReportedAccessible,
@@ -345,6 +345,29 @@ pub struct Availability {
     pub preferred_weekday: Option<Weekday>,
 }
 
+impl Ord for Availability {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.rules
+            .cmp(&other.rules)
+            .then_with(|| self.minimum_notice_days.cmp(&other.minimum_notice_days))
+            .then_with(|| {
+                self.preferred_weekday
+                    .map(|day| day.num_days_from_monday())
+                    .cmp(
+                        &other
+                            .preferred_weekday
+                            .map(|day| day.num_days_from_monday()),
+                    )
+            })
+    }
+}
+
+impl PartialOrd for Availability {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 /// Availability claim over a date range and optional weekdays.
 #[derive(Debug, PartialEq, Eq)]
 pub struct AvailabilityRule {
@@ -356,8 +379,32 @@ pub struct AvailabilityRule {
     pub status: DateStatus,
 }
 
+impl Ord for AvailabilityRule {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        let weekdays = match (&self.weekdays, &other.weekdays) {
+            (Some(left), Some(right)) => left
+                .iter()
+                .map(Weekday::num_days_from_monday)
+                .cmp(right.iter().map(Weekday::num_days_from_monday)),
+            (None, Some(_)) => std::cmp::Ordering::Less,
+            (Some(_), None) => std::cmp::Ordering::Greater,
+            (None, None) => std::cmp::Ordering::Equal,
+        };
+        self.dates
+            .cmp(&other.dates)
+            .then(weekdays)
+            .then_with(|| self.status.cmp(&other.status))
+    }
+}
+
+impl PartialOrd for AvailabilityRule {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 /// Positive or negative availability claim.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DateStatus {
     /// The source reports availability, subject to booking.
     Available,
@@ -366,7 +413,7 @@ pub enum DateStatus {
 }
 
 /// Inclusive, non-reversed range of calendar dates.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DateRange {
     start: NaiveDate,
     end: NaiveDate,
@@ -397,7 +444,7 @@ impl DateRange {
 }
 
 /// Station, walking and transit evidence, recorded independently.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct StationAccess {
     /// Nearest station claim, when supported.
     pub station: Evidence<String>,
@@ -408,7 +455,7 @@ pub struct StationAccess {
 }
 
 /// Published walking time to the station.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct WalkTime {
     /// Walking duration in whole minutes.
     pub minutes: u32,
@@ -417,7 +464,7 @@ pub struct WalkTime {
 }
 
 /// Strength or limitation of an amenity claim.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Quality {
     /// Explicitly adverse evidence.
     Unacceptable,
