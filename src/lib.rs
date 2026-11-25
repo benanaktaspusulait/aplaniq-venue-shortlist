@@ -6,3 +6,4 @@ pub mod domain;
 pub mod evaluate;
 pub mod ingest;
 mod normalize;
+pub mod rank;
