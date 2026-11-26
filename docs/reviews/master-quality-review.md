@@ -30,8 +30,16 @@ Fix the confirmed findings in order with regressions and the canonical gate. Re-
 
 ### Final checks
 
-The inspected code revision was `1173df0`. On 26 November 2026 the major gate passed in a clean Git archive with no compiler, Clippy or Rustdoc warnings. Debug, release and the Rust 1.85.0 MSRV each ran 34 unit tests, 45 integration tests and 2 compile-fail doctests. There were zero failed or ignored tests. Rust 1.85.0 instrumentation measured 93.64% lines, 93.82% functions and 85.95% regions using the same exclusions as QA-007. Branch coverage and a fresh hosted CI run were not observed.
+The inspected code revision was `1173df0`. On 26 November 2026 the major gate passed in a clean Git archive with no compiler, Clippy or Rustdoc warnings. Debug, release and the Rust 1.85.0 MSRV each ran 34 unit tests, 45 integration tests and 2 compile-fail doctests. There were zero failed or ignored tests. Rust 1.85.0 instrumentation measured 93.64% lines, 93.82% functions and 85.95% regions using the same exclusions as QA-007. Branch coverage was not measured.
 
 The native invocation and release binary matched each other and the previous verified application output and diagnostics byte for byte. All 30 records were preserved. The original export still reports 3 eligible, 19 conditional and 8 rejected for 80 attendees, and 1 eligible, 16 conditional and 13 rejected for 120.
 
 The arm64 Docker smoke suite passed. A separate amd64 emulated run also matched the native streams. The locked dependency graph has no duplicate versions. The offline Trivy source scan detected zero advisory or secret findings. The rebuilt arm64 image scan reported zero HIGH and CRITICAL findings, 9 MEDIUM, 10 LOW, 2 UNKNOWN and zero detected secrets. Scan results are limited to the cached advisory database.
+
+### Copilot audit follow-up
+
+The original Copilot report is preserved in commit `4b0353a`. It covers the older `35570b4` source. A separate read-only reviewer found no reproducible business-code defect and ran no quality gates. The historical R3/R4 independence deviation remains in the [assessment log](../assessment-log.md) and [R3 review](../engineering/r3-business-logic-review.md). Copilot separately measured 92.84% line coverage with pinned Rust 1.100.0 and 61 passing tests on that snapshot. The later MSRV coverage and native and container results above apply to the corrected source.
+
+GitHub Actions passed the same major gate on `4b0353a`, whose code matches `1173df0`. [Hosted workflow run](https://github.com/benanaktaspusulait/aplaniq-venue-shortlist/actions/runs/45787816515)
+
+The dedicated `cargo audit` advisory and `cargo deny check` dependency policy and licensing checks remain blocked because neither tool is installed locally.
