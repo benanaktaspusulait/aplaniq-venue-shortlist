@@ -927,3 +927,31 @@ fn compulsory_wording_preserves_the_budget_requirement_and_negation() {
         });
     }
 }
+
+#[test]
+fn closed_transport_does_not_supply_an_affirmative_route() {
+    for (notes, expected) in [
+        ("The nearby bus stop is closed.", RequiresConfirmation),
+        (
+            "The nearby tram stop is temporarily unavailable.",
+            RequiresConfirmation,
+        ),
+        (
+            "The closest route goes past a closed bus stop.",
+            RequiresConfirmation,
+        ),
+        ("The tram stop next to the closed café is open.", Eligible),
+        (
+            "The nearby bus stop is closed, but guests can come by train.",
+            Eligible,
+        ),
+    ] {
+        let mut row = venue("stop-status");
+        row["notes"] = json!(notes);
+        row["nearest_station"] = Value::Null;
+        row["walk_minutes"] = Value::Null;
+        with_rows(&[row], |result| {
+            assert_eq!(result[0].primary.eligibility, expected, "{notes}");
+        });
+    }
+}

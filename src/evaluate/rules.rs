@@ -338,12 +338,52 @@ fn positive_transport_assertion(clause: &str) -> bool {
             "by bus",
             "by tram",
             "tram stop",
+            "tram stops",
             "bus stop",
+            "bus stops",
             "bus from",
             "tram from",
         ]
         .iter()
-        .any(|claim| clause.contains(claim))
+        .any(|claim| {
+            clause.match_indices(claim).any(|(start, claim)| {
+                let (Some(before), Some(after)) =
+                    (clause.get(..start), clause.get(start + claim.len()..))
+                else {
+                    return false;
+                };
+                !before
+                    .chars()
+                    .next_back()
+                    .is_some_and(char::is_alphanumeric)
+                    && !after.chars().next().is_some_and(char::is_alphanumeric)
+                    && !connection_unavailable(before, after)
+            })
+        })
+}
+
+fn connection_unavailable(before: &str, after: &str) -> bool {
+    let unavailable = |word: &str| {
+        matches!(
+            word.trim_matches(|c: char| !c.is_ascii_alphabetic()),
+            "closed" | "unavailable" | "suspended" | "discontinued"
+        )
+    };
+    if before
+        .split_whitespace()
+        .next_back()
+        .is_some_and(unavailable)
+    {
+        return true;
+    }
+
+    let mut predicate = after.split_whitespace();
+    match predicate.next() {
+        Some("is" | "are" | "was" | "were" | "has" | "have") => predicate
+            .find(|word| !matches!(*word, "been" | "currently" | "temporarily" | "permanently"))
+            .is_some_and(unavailable),
+        _ => false,
+    }
 }
 
 pub(super) fn quality(
