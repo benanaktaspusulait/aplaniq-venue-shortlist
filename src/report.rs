@@ -625,10 +625,10 @@ pub(super) fn write_diagnostics(
 }
 
 pub(super) fn terminal_text(value: &str) -> Cow<'_, str> {
-    if value.chars().any(char::is_control) {
+    if value.chars().any(is_terminal_formatting_control) {
         value
             .chars()
-            .filter(|character| !character.is_control())
+            .filter(|&character| !is_terminal_formatting_control(character))
             .collect::<String>()
             .into()
     } else {
@@ -636,10 +636,35 @@ pub(super) fn terminal_text(value: &str) -> Cow<'_, str> {
     }
 }
 
+fn is_terminal_formatting_control(character: char) -> bool {
+    // Unicode UAX #9 directional marks, embeddings, overrides and isolates.
+    character.is_control()
+        || matches!(
+            character,
+            '\u{061c}' | '\u{200e}' | '\u{200f}' | '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}'
+        )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use venue_shortlist::evaluate::partner_day_request;
+
+    #[test]
+    fn terminal_text_preserves_scripts_without_directional_formatting() {
+        let letters_and_joiner = "Étage المكان\u{200d}";
+        assert!(matches!(
+            terminal_text(letters_and_joiner),
+            Cow::Borrowed(_)
+        ));
+        for control in [
+            '\u{061c}', '\u{200e}', '\u{200f}', '\u{202a}', '\u{202b}', '\u{202c}', '\u{202d}',
+            '\u{202e}', '\u{2066}', '\u{2067}', '\u{2068}', '\u{2069}',
+        ] {
+            let text = format!("Étage {control}المكان\u{200d}");
+            assert_eq!(terminal_text(&text), letters_and_joiner);
+        }
+    }
 
     #[test]
     fn event_header_uses_request_currency_and_preference() {
