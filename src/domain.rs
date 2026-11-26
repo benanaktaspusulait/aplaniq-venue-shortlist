@@ -510,28 +510,6 @@ pub enum Criterion {
     Wifi,
 }
 
-/// Human-readable explanation tied to a criterion and its sources.
-#[derive(Debug, PartialEq, Eq)]
-pub struct Finding {
-    /// Business dimension explained by this finding.
-    pub criterion: Criterion,
-    /// Explanation suitable for a reader of the assessment.
-    pub message: String,
-    /// Records or fields supporting the explanation.
-    pub sources: Vec<SourceRef>,
-}
-
-/// Eligibility and its supporting reasons for one scenario.
-#[derive(Debug, PartialEq, Eq)]
-pub struct Assessment {
-    /// Outcome for this scenario.
-    pub eligibility: Eligibility,
-    /// Findings that explain the outcome.
-    pub reasons: Vec<Finding>,
-    /// Caveats to retain alongside the outcome.
-    pub warnings: Vec<Finding>,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

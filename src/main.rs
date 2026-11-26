@@ -71,12 +71,15 @@ fn main() -> ExitCode {
     let mut out = io::stdout().lock();
     let mut err = io::stderr().lock();
     let result = match parse_args(env::args_os().skip(1)) {
-        Ok(Command::Help) => write!(out, "{HELP}").map_err(Into::into),
-        Ok(Command::Version) => {
-            writeln!(out, "venue-shortlist {}", env!("CARGO_PKG_VERSION")).map_err(Into::into)
-        }
+        Ok(Command::Help) => write!(out, "{HELP}")
+            .and_then(|()| out.flush())
+            .map_err(Into::into),
+        Ok(Command::Version) => writeln!(out, "venue-shortlist {}", env!("CARGO_PKG_VERSION"))
+            .and_then(|()| out.flush())
+            .map_err(Into::into),
         Ok(Command::Run(path)) => run(&path, &mut out, &mut err),
         Err(message) => {
+            // A failing diagnostic stream cannot change the primary usage status.
             let _ = writeln!(
                 err,
                 "Error: {message}. Run venue-shortlist --help for usage."
@@ -87,6 +90,7 @@ fn main() -> ExitCode {
     match result {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
+            // Preserve the primary failure status if stderr is also closed.
             let _ = writeln!(err, "Error: {}", report::terminal_text(&error.to_string()));
             ExitCode::FAILURE
         }

@@ -42,14 +42,14 @@ pub(super) fn write_report(
         writeln!(out, "  None.")?;
     }
     for entry in &shortlist.conditional {
-        write_other(out, entry, true)?;
+        write_other(out, entry)?;
     }
     writeln!(out, "\nRejected venues")?;
     if shortlist.rejected.is_empty() {
         writeln!(out, "  None.")?;
     }
     for entry in &shortlist.rejected {
-        write_other(out, entry, false)?;
+        write_other(out, entry)?;
     }
 
     writeln!(out, "\nNext steps")?;
@@ -67,6 +67,12 @@ pub(super) fn write_report(
     )
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum FindingsDetail {
+    QuoteAndFindings,
+    FailuresOnly,
+}
+
 fn write_event(out: &mut impl Write, request: &EventRequest) -> io::Result<()> {
     writeln!(out, "AplanIQ Venue Shortlist\n\nEvent request")?;
     writeln!(
@@ -77,10 +83,18 @@ fn write_event(out: &mut impl Write, request: &EventRequest) -> io::Result<()> {
     if let Some(expansion) = request.expansion_attendees {
         writeln!(out, "  Expansion: {expansion} seated attendees")?;
     }
+    let budget = match &request.budget.currency {
+        Currency::Eur => money(request.budget.minor_units, "EUR"),
+        Currency::Usd => money(request.budget.minor_units, "USD"),
+        Currency::Other(code) => format!(
+            "{} minor units of {} (scale unconfirmed)",
+            request.budget.minor_units.get(),
+            terminal_text(code)
+        ),
+    };
     writeln!(
         out,
-        "  Working budget: {} including VAT, catering and mandatory charges",
-        money(request.budget.minor_units, "EUR")
+        "  Working budget: {budget} including VAT, catering and mandatory charges"
     )?;
     writeln!(
         out,
@@ -92,9 +106,13 @@ fn write_event(out: &mut impl Write, request: &EventRequest) -> io::Result<()> {
             .collect::<Vec<_>>()
             .join(", ")
     )?;
+    write!(out, "  ")?;
+    if let Some(day) = request.preferred_weekday {
+        write!(out, "{} preferred. ", weekday_label(day))?;
+    }
     writeln!(
         out,
-        "  Thursday preferred. At least {} simultaneous breakout rooms and wheelchair access are required.",
+        "At least {} simultaneous breakout rooms and wheelchair access are required.",
         request.minimum_breakouts
     )?;
     writeln!(
@@ -218,22 +236,20 @@ fn write_ranked(out: &mut impl Write, entry: &Recommendation<'_>) -> io::Result<
     if let Some(headroom) = factors.budget_headroom {
         writeln!(out, "     Budget headroom: {}", money(headroom, "EUR"))?;
     }
-    write_expansion(out, assessment, true)?;
+    write_expansion(out, assessment, FindingsDetail::QuoteAndFindings)?;
     write_duplicates(out, assessment)
 }
 
-fn write_other(
-    out: &mut impl Write,
-    entry: &VenueAssessment<'_>,
-    conditional: bool,
-) -> io::Result<()> {
+fn write_other(out: &mut impl Write, entry: &VenueAssessment<'_>) -> io::Result<()> {
     let Some(venue) = entry.entity.listings().first() else {
         return Ok(());
     };
     writeln!(out, "  {}", name(venue))?;
-    write_findings(out, &entry.primary, conditional, conditional)?;
-    if conditional {
-        write_expansion(out, entry, false)?;
+    if entry.primary.eligibility == Eligibility::RequiresConfirmation {
+        write_findings(out, &entry.primary, FindingsDetail::QuoteAndFindings)?;
+        write_expansion(out, entry, FindingsDetail::FailuresOnly)?;
+    } else {
+        write_findings(out, &entry.primary, FindingsDetail::FailuresOnly)?;
     }
     write_duplicates(out, entry)
 }
@@ -241,13 +257,13 @@ fn write_other(
 fn write_findings(
     out: &mut impl Write,
     scenario: &ScenarioAssessment<'_>,
-    conditional: bool,
-    show_cost: bool,
+    detail: FindingsDetail,
 ) -> io::Result<()> {
+    let conditional = scenario.eligibility == Eligibility::RequiresConfirmation;
     for listing in &scenario.listings {
         write_source(out, listing, scenario.listings.len() > 1)?;
         let budget_failed = listing.budget.requirement.outcome == Violated;
-        if show_cost || budget_failed {
+        if detail == FindingsDetail::QuoteAndFindings || budget_failed {
             write_cost(out, listing)?;
         }
         for check in listing.requirements.iter().filter(|check| {
@@ -313,7 +329,7 @@ fn write_findings(
 fn write_expansion(
     out: &mut impl Write,
     entry: &VenueAssessment<'_>,
-    ranked: bool,
+    detail: FindingsDetail,
 ) -> io::Result<()> {
     let Some(expansion) = &entry.expansion else {
         return Ok(());
@@ -324,13 +340,10 @@ fn write_expansion(
         Eligibility::Rejected => "Not supported",
     };
     writeln!(out, "     Expansion ({}): {verdict}.", expansion.attendees)?;
-    if ranked || expansion.eligibility != entry.primary.eligibility {
-        write_findings(
-            out,
-            expansion,
-            expansion.eligibility == Eligibility::RequiresConfirmation,
-            ranked,
-        )?;
+    if detail == FindingsDetail::QuoteAndFindings
+        || expansion.eligibility != entry.primary.eligibility
+    {
+        write_findings(out, expansion, detail)?;
     }
     Ok(())
 }
@@ -552,8 +565,8 @@ fn bounds(minimum: u32, maximum: u32) -> String {
     }
 }
 
-fn date_label(date: NaiveDate) -> String {
-    let weekday = match date.weekday() {
+fn weekday_label(day: Weekday) -> &'static str {
+    match day {
         Weekday::Mon => "Monday",
         Weekday::Tue => "Tuesday",
         Weekday::Wed => "Wednesday",
@@ -561,7 +574,11 @@ fn date_label(date: NaiveDate) -> String {
         Weekday::Fri => "Friday",
         Weekday::Sat => "Saturday",
         Weekday::Sun => "Sunday",
-    };
+    }
+}
+
+fn date_label(date: NaiveDate) -> String {
+    let weekday = weekday_label(date.weekday());
     let month = u8::try_from(date.month())
         .ok()
         .and_then(|month| Month::try_from(month).ok())
@@ -608,5 +625,28 @@ pub(super) fn terminal_text(value: &str) -> Cow<'_, str> {
             .into()
     } else {
         value.into()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use venue_shortlist::evaluate::partner_day_request;
+
+    #[test]
+    fn event_header_uses_request_currency_and_preference() {
+        let mut request = partner_day_request();
+        request.preferred_weekday = Some(Weekday::Tue);
+        request.budget.currency = Currency::Usd;
+        let mut report = Vec::new();
+        write_event(&mut report, &request).unwrap();
+        let report = std::str::from_utf8(&report).unwrap();
+        assert!(report.contains("Tuesday preferred."));
+        assert!(report.contains("Working budget: USD 15,000.00"));
+
+        request.preferred_weekday = None;
+        let mut report = Vec::new();
+        write_event(&mut report, &request).unwrap();
+        assert!(!std::str::from_utf8(&report).unwrap().contains("preferred."));
     }
 }
