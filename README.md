@@ -63,6 +63,6 @@ docker run --rm aplaniq-venue-shortlist:local --help
 docker run --rm aplaniq-venue-shortlist:local --version
 ```
 
-The image runs as UID and GID `65532`. Supply a JSON file readable by that user at the mount path. Both base images are pinned by digest. The runtime contains the release binary on a Debian 13 distroless base and has no shell. Image and crate downloads can require network access during the build. The run above disables networking.
+The image runs as UID and GID `65532`. Supply a JSON file readable by that user at the mount path. Both base images are pinned by digest. The runtime contains the release binary and its required libgcc runtime on a Debian 13 distroless base without OpenSSL or a shell. Image and crate downloads can require network access during the build. The run above disables networking.
 
 Run `sh scripts/docker-smoke-test.sh` to rebuild and compare native and container output and verify expected failures. Build and run were verified on `linux/arm64`. See the [packaging record](docs/tasks/TASK-007B-docker-packaging.md#observed-validation) for the image measurement and scan results.

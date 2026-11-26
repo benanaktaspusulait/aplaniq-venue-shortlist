@@ -85,5 +85,11 @@ if grep -E '(^|/)(venues[.]json|Cargo[.](toml|lock)|[.]git|[.]planning|[.]gsd|NO
     exit 1
 fi
 
+grep -Fx 'usr/lib/libgcc_s.so.1' "$temp/rootfs.list"
+if grep -E '(^|/)lib(ssl|crypto)[.]so([.]|$)' "$temp/rootfs.list"; then
+    printf '%s\n' 'Unexpected OpenSSL runtime libraries' >&2
+    exit 1
+fi
+
 docker image inspect --format 'Image {{.Os}}/{{.Architecture}}, {{.Size}} bytes, user {{.Config.User}}' "$image"
 printf '%s\n' 'Docker smoke test passed.'
