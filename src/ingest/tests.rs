@@ -533,3 +533,25 @@ fn named_file_parse_error_retains_path_and_json_cause() {
     assert!(error.to_string().contains("line 1 column 2"));
     assert!(error.source().and_then(Error::source).is_some());
 }
+
+#[test]
+fn deduplication_preserves_source_positions_when_internal_listings_are_reordered() {
+    use crate::dedup::deduplicate;
+
+    for input in [
+        include_str!("../../venues.json"),
+        r#"{"venues":[
+            {"id":"same","name":"Assembly Hall","city":"Utrecht"},
+            {"id":"same","name":"Assembly Hall","city":"Utrecht","address":"Street 1"},
+            {"id":"same","name":"Assembly Hall","city":"Utrecht"},
+            {"id":"same","name":"Assembly Hall","city":"Utrecht","address":"street  1"}
+        ]}"#,
+    ] {
+        let original = parse_venues(input, YEAR).unwrap();
+        let mut permuted = parse_venues(input, YEAR).unwrap();
+        permuted.venues.reverse();
+        let shift = 7 % permuted.venues.len();
+        permuted.venues.rotate_left(shift);
+        assert_eq!(deduplicate(&permuted), deduplicate(&original));
+    }
+}

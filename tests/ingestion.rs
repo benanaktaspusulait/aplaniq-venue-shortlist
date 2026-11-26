@@ -28,10 +28,10 @@ fn original_export_accounts_for_every_source_row_and_preserves_evidence() {
 
     let mut seen = vec![0; rows.len()];
     for source in report
-        .venues
+        .venues()
         .iter()
         .flat_map(|venue| &venue.sources)
-        .chain(&report.rejected_records)
+        .chain(report.rejected_records())
     {
         seen[source.record_index] += 1;
         assert_eq!(
@@ -39,11 +39,11 @@ fn original_export_accounts_for_every_source_row_and_preserves_evidence() {
             rows[source.record_index]["id"].as_str()
         );
     }
-    assert_eq!(report.source_record_count, 30);
-    assert_eq!(report.venues.len(), 30);
-    assert_eq!(report.rejected_records, []);
+    assert_eq!(report.source_record_count(), 30);
+    assert_eq!(report.venues().len(), 30);
+    assert_eq!(report.rejected_records(), []);
     assert!(seen.into_iter().all(|count| count == 1));
-    for diagnostic in &report.diagnostics {
+    for diagnostic in report.diagnostics() {
         let row = &rows[diagnostic.source.record_index];
         assert_eq!(
             diagnostic.source.venue_id.as_ref().map(VenueId::as_str),
@@ -56,12 +56,17 @@ fn original_export_accounts_for_every_source_row_and_preserves_evidence() {
         let expected = raw.as_str().map_or_else(|| raw.to_string(), str::to_owned);
         assert_eq!(diagnostic.raw.as_deref(), Some(expected.as_str()));
     }
-    assert!(report.diagnostics.iter().any(|d| d.source.record_index == 7
-        && d.source.field.as_deref() == Some("price.amount")
-        && d.kind == DiagnosticKind::Ambiguous));
     assert!(
         report
-            .diagnostics
+            .diagnostics()
+            .iter()
+            .any(|d| d.source.record_index == 7
+                && d.source.field.as_deref() == Some("price.amount")
+                && d.kind == DiagnosticKind::Ambiguous)
+    );
+    assert!(
+        report
+            .diagnostics()
             .iter()
             .any(|d| d.source.record_index == 26
                 && d.source.field.as_deref() == Some("capacity")
@@ -69,7 +74,7 @@ fn original_export_accounts_for_every_source_row_and_preserves_evidence() {
     );
 
     let stadstuin = report
-        .venues
+        .venues()
         .iter()
         .find(|venue| venue.id.as_str() == "v019")
         .unwrap();
@@ -103,10 +108,10 @@ fn original_export_accounts_for_every_source_row_and_preserves_evidence() {
 
     eprintln!(
         "dataset: {} rows, {} normalised, {} rejected, {} diagnostics",
-        report.source_record_count,
-        report.venues.len(),
-        report.rejected_records.len(),
-        report.diagnostics.len()
+        report.source_record_count(),
+        report.venues().len(),
+        report.rejected_records().len(),
+        report.diagnostics().len()
     );
 }
 
@@ -118,7 +123,7 @@ fn qualified_amenities_retain_the_room_and_adverse_claim() {
     )
     .unwrap();
     let fort = report
-        .venues
+        .venues()
         .iter()
         .find(|venue| venue.id.as_str() == "v007")
         .unwrap();
@@ -137,11 +142,11 @@ fn qualified_amenities_retain_the_room_and_adverse_claim() {
         {"id":"sample","name":"Hall","daylight":"mixed — plenary has no windows","wifi":"4G backup only in plenary"}
     ]}"#, None).unwrap();
     assert_eq!(
-        report.venues[0].daylight_qualification.as_deref(),
+        report.venues()[0].daylight_qualification.as_deref(),
         Some("mixed — plenary has no windows")
     );
     assert_eq!(
-        report.venues[0].wifi_qualification.as_deref(),
+        report.venues()[0].wifi_qualification.as_deref(),
         Some("4G backup only in plenary")
     );
 }

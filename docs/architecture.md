@@ -50,7 +50,7 @@ Each entity retains whole normalised listings as configurations. Field conflicts
 
 ## Eligibility and recommendation APIs
 
-`assess_venues` consumes the deduplication report and an explicit event request. Each entity exposes both attendance verdicts, per-listing checks and costs, per-date verdicts and potential pairs. A confirmed entity must have agreement on a passing date. Potential duplicates that would otherwise qualify remain in follow-up. Evidence stays with each original listing.
+`assess_venues` borrows the deduplication report and an explicit event request. The public ingestion and deduplication APIs expose read-only views so source counts and identity warnings remain consistent with the listings evaluated. Each entity exposes both attendance verdicts, per-listing checks and costs, per-date verdicts and potential pairs. A confirmed entity must have agreement on a passing date. Potential duplicates that would otherwise qualify remain in follow-up. Evidence stays with each original listing.
 
 `rank_venues` takes the deduplicated entities and one request, which it uses to assess eligibility and rank eligible venues. It partitions the authoritative primary verdicts and returns typed ranking factors. A supported preferred weekday wins first. Transport, daylight, Wi-Fi, comparable headroom and expansion follow. The earliest supported date within the chosen weekday is the suggested date. Shared entities use the least favourable supported transport and quality factors across their listings. A cost disagreement yields absent headroom. The final tie-break uses the listing ID, identity details and, on collision, source configuration details before the original index. Ranking returns all eligible entries because no presentation limit was agreed.
 

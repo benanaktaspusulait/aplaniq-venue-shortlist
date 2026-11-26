@@ -433,8 +433,8 @@ fn original_export_and_synthetic_stadstuin_have_the_expected_80_and_120_verdicts
     let deduplication = deduplicate(&report);
     let results = assess_venues(&deduplication, &partner_day_request());
     assert_eq!(results.len(), 30);
-    assert_eq!(deduplication.normalised_record_count, 30);
-    assert_eq!(deduplication.potential_duplicates.len(), 3);
+    assert_eq!(deduplication.normalised_record_count(), 30);
+    assert_eq!(deduplication.potential_duplicates().len(), 3);
     let garden = results
         .iter()
         .find(|entry| entry.entity.listings()[0].id.as_str() == "v019")
@@ -829,7 +829,7 @@ fn mixed_capacity_layouts_preserve_valid_seats_and_report_unresolved_layouts() {
         assert_eq!(assessment[0].primary.eligibility, verdict);
         assert!(
             report
-                .diagnostics
+                .diagnostics()
                 .iter()
                 .any(|diagnostic| { diagnostic.source.field.as_deref() == Some(diagnostic_field) })
         );
@@ -848,13 +848,13 @@ fn potential_duplicate_memberships_follow_global_pair_order_in_confirmed_groups(
         .collect();
     let report = parse_venues(&json!({"venues": rows}).to_string(), Some(2027)).unwrap();
     let groups = deduplicate(&report);
-    assert_eq!(groups.entities.len(), 3);
-    assert_eq!(groups.potential_duplicates.len(), 5);
+    assert_eq!(groups.entities().len(), 3);
+    assert_eq!(groups.potential_duplicates().len(), 5);
     let assessments = assess_venues(&groups, &partner_day_request());
     for entry in assessments {
         let expected: Vec<_> =
             groups
-                .potential_duplicates
+                .potential_duplicates()
                 .iter()
                 .filter(|pair| {
                     entry.entity.listings().iter().any(|&venue| {

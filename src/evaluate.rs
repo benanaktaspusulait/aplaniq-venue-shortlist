@@ -147,7 +147,7 @@ pub fn assess_venues<'a>(
     dates.dedup();
 
     let mut pairs_by_source = BTreeMap::<_, Vec<_>>::new();
-    for (index, pair) in deduplication.potential_duplicates.iter().enumerate() {
+    for (index, pair) in deduplication.potential_duplicates().iter().enumerate() {
         for listing in [pair.left, pair.right] {
             pairs_by_source
                 .entry(first_source_index(listing))
@@ -156,7 +156,7 @@ pub fn assess_venues<'a>(
         }
     }
     deduplication
-        .entities
+        .entities()
         .iter()
         .map(|entity| {
             let mut matched_pairs: Vec<_> = entity

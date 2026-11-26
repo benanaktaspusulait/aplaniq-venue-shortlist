@@ -55,24 +55,76 @@ impl<'a> VenueEntity<'a> {
 }
 
 /// Accounting and identity diagnostics for one ingested export.
+///
+/// Potential identity pairs stay attached to the grouping used for evaluation.
+///
+/// ```compile_fail
+/// use venue_shortlist::{dedup::deduplicate, ingest::parse_venues};
+///
+/// let report = parse_venues(r#"{"venues":[]}"#, None).unwrap();
+/// let mut groups = deduplicate(&report);
+/// groups.potential_duplicates.clear();
+/// ```
 #[derive(Debug, PartialEq, Eq)]
 pub struct Deduplication<'a> {
-    /// Original number of input rows, including rejected rows.
-    pub source_record_count: usize,
+    source_record_count: usize,
+    normalised_record_count: usize,
+    rejected_records: &'a [SourceRef],
+    entities: Vec<VenueEntity<'a>>,
+    potential_duplicates: Vec<PotentialDuplicate<'a>>,
+    confirmed_group_count: usize,
+    potential_record_count: usize,
+    unresolved_conflict_count: usize,
+}
+
+impl<'a> Deduplication<'a> {
+    /// Original number of source rows, including rejected rows.
+    #[must_use]
+    pub fn source_record_count(&self) -> usize {
+        self.source_record_count
+    }
+
     /// Number of normalised source listings.
-    pub normalised_record_count: usize,
-    /// Rows that ingestion rejected before identity comparison.
-    pub rejected_records: &'a [SourceRef],
+    #[must_use]
+    pub fn normalised_record_count(&self) -> usize {
+        self.normalised_record_count
+    }
+
+    /// Rows rejected before identity comparison.
+    #[must_use]
+    pub fn rejected_records(&self) -> &[SourceRef] {
+        self.rejected_records
+    }
+
     /// Distinct entities ordered by first listing ID and original row index.
-    pub entities: Vec<VenueEntity<'a>>,
+    #[must_use]
+    pub fn entities(&self) -> &[VenueEntity<'a>] {
+        &self.entities
+    }
+
     /// Unresolved identity pairs ordered by later listing, then earlier listing.
-    pub potential_duplicates: Vec<PotentialDuplicate<'a>>,
-    /// Entities containing multiple confirmed listings.
-    pub confirmed_group_count: usize,
+    #[must_use]
+    pub fn potential_duplicates(&self) -> &[PotentialDuplicate<'a>] {
+        &self.potential_duplicates
+    }
+
+    /// Number of entities with multiple confirmed listings.
+    #[must_use]
+    pub fn confirmed_group_count(&self) -> usize {
+        self.confirmed_group_count
+    }
+
     /// Number of distinct normalised rows involved in a potential pair.
-    pub potential_record_count: usize,
+    #[must_use]
+    pub fn potential_record_count(&self) -> usize {
+        self.potential_record_count
+    }
+
     /// Number of unresolved field disagreements across confirmed listing pairs.
-    pub unresolved_conflict_count: usize,
+    #[must_use]
+    pub fn unresolved_conflict_count(&self) -> usize {
+        self.unresolved_conflict_count
+    }
 }
 
 /// Groups strong identity matches in one export and keeps every listing intact.
@@ -84,7 +136,7 @@ pub struct Deduplication<'a> {
 /// indices break ties between listings that share an ID.
 #[must_use]
 pub fn deduplicate(report: &Ingestion) -> Deduplication<'_> {
-    let mut listings: Vec<_> = report.venues.iter().collect();
+    let mut listings: Vec<_> = report.venues().iter().collect();
     listings.sort_by_key(|venue| (&venue.id, venue.sources.first().map(|row| row.record_index)));
 
     let identities: Vec<_> = listings.iter().map(|venue| Identity::new(venue)).collect();
@@ -127,9 +179,9 @@ pub fn deduplicate(report: &Ingestion) -> Deduplication<'_> {
 
     let entities: Vec<_> = groups.into_iter().map(|(_, entity)| entity).collect();
     Deduplication {
-        source_record_count: report.source_record_count,
+        source_record_count: report.source_record_count(),
         normalised_record_count: listings.len(),
-        rejected_records: &report.rejected_records,
+        rejected_records: report.rejected_records(),
         confirmed_group_count: entities
             .iter()
             .filter(|entity| entity.listings.len() > 1)

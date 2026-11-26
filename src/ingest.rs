@@ -81,16 +81,47 @@ impl Error for InputError {
 }
 
 /// Normalised rows and diagnostics from a readable venue document.
+///
+/// The row inventory and its source counts can only be constructed by ingestion.
+///
+/// ```compile_fail
+/// use venue_shortlist::ingest::parse_venues;
+///
+/// let mut report = parse_venues(r#"{"venues":[]}"#, None).unwrap();
+/// report.venues.clear();
+/// ```
 #[derive(Debug, PartialEq, Eq)]
 pub struct Ingestion {
+    source_record_count: usize,
+    venues: Vec<Venue>,
+    rejected_records: Vec<SourceRef>,
+    diagnostics: Vec<Diagnostic>,
+}
+
+impl Ingestion {
     /// Number of rows in the source array.
-    pub source_record_count: usize,
-    /// Successfully identified and normalised records in source order.
-    pub venues: Vec<Venue>,
-    /// Source references for rows that could not be loaded.
-    pub rejected_records: Vec<SourceRef>,
+    #[must_use]
+    pub fn source_record_count(&self) -> usize {
+        self.source_record_count
+    }
+
+    /// Successfully normalised listings in source order.
+    #[must_use]
+    pub fn venues(&self) -> &[Venue] {
+        &self.venues
+    }
+
+    /// Source references for rejected rows.
+    #[must_use]
+    pub fn rejected_records(&self) -> &[SourceRef] {
+        &self.rejected_records
+    }
+
     /// Field and record issues, including nonfatal assumptions.
-    pub diagnostics: Vec<Diagnostic>,
+    #[must_use]
+    pub fn diagnostics(&self) -> &[Diagnostic] {
+        &self.diagnostics
+    }
 }
 
 /// Reads and normalises the venue export at the given path.

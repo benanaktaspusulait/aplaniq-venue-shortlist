@@ -62,7 +62,7 @@ fn run(
     let shortlist = rank_venues(&groups, &request);
     report::write_report(out, &request, &groups, &shortlist)?;
     out.flush()?;
-    report::write_diagnostics(diagnostics, &input.diagnostics)?;
+    report::write_diagnostics(diagnostics, input.diagnostics())?;
     diagnostics.flush()?;
     Ok(())
 }

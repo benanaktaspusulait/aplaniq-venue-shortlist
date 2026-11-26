@@ -148,7 +148,7 @@ mod tests {
                 None,
             )
             .unwrap();
-            let [left, right] = report.venues.as_slice() else {
+            let [left, right] = report.venues() else {
                 panic!("expected two normalised listings");
             };
             assert_eq!(
@@ -172,7 +172,7 @@ mod tests {
             None,
         )
         .unwrap();
-        let (first, alternatives) = report.venues.split_first().unwrap();
+        let (first, alternatives) = report.venues().split_first().unwrap();
 
         for other in alternatives {
             assert_eq!(

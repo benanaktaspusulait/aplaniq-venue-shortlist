@@ -134,19 +134,27 @@ fn write_counts(
     shortlist: &Shortlist<'_>,
 ) -> io::Result<()> {
     writeln!(out, "\nProcessing summary")?;
-    writeln!(out, "  Source records: {}", groups.source_record_count)?;
+    writeln!(out, "  Source records: {}", groups.source_record_count())?;
     writeln!(
         out,
         "  Normalised records: {}",
-        groups.normalised_record_count
+        groups.normalised_record_count()
     )?;
-    writeln!(out, "  Invalid records: {}", groups.rejected_records.len())?;
-    writeln!(out, "  Distinct venue entities: {}", groups.entities.len())?;
+    writeln!(
+        out,
+        "  Invalid records: {}",
+        groups.rejected_records().len()
+    )?;
+    writeln!(
+        out,
+        "  Distinct venue entities: {}",
+        groups.entities().len()
+    )?;
     writeln!(
         out,
         "  Potential duplicate warnings: {} pairs across {} listings",
-        groups.potential_duplicates.len(),
-        groups.potential_record_count
+        groups.potential_duplicates().len(),
+        groups.potential_record_count()
     )?;
     let mut expansion_counts = [0; 3];
     let entries = shortlist
