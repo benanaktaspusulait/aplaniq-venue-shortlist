@@ -504,20 +504,27 @@ fn daylight(value: &Value) -> Result<Quality, Issue> {
     }
 }
 
-fn windowless_plenary(label: &str) -> bool {
-    let claim = label
-        .strip_prefix("mixed ")
-        .map_or(label, |detail| {
+fn amenity_claims(label: &str) -> impl Iterator<Item = &str> {
+    label.split([';', ',', '.', '\n']).map(|part| {
+        let part = part.trim();
+        let claim = part.strip_prefix("mixed ").map_or(part, |detail| {
             detail.trim_start_matches(['—', '–', '-', ':', ' '])
-        })
-        .trim_end_matches('.');
-    matches!(
-        claim.strip_prefix("the ").unwrap_or(claim),
-        "plenary has no windows"
-            | "no windows in plenary"
-            | "windowless plenary"
-            | "plenary is windowless"
-    )
+        });
+        claim.strip_prefix("the ").unwrap_or(claim)
+    })
+}
+
+fn windowless_plenary(label: &str) -> bool {
+    amenity_claims(label).any(|claim| {
+        matches!(
+            claim,
+            "plenary has no windows"
+                | "no windows in plenary"
+                | "windowless plenary"
+                | "plenary is windowless"
+                | "plenary is dark"
+        )
+    })
 }
 
 fn wifi(value: &Value) -> Result<Quality, Issue> {
@@ -527,7 +534,14 @@ fn wifi(value: &Value) -> Result<Quality, Issue> {
             Ok(Quality::Strong)
         }
         "weak" | "poor" | "unreliable" | "complaints reported" => Ok(Quality::Unacceptable),
-        "poor wifi in plenary" | "unreliable wifi in plenary" | "plenary wifi is poor" => {
+        label
+            if amenity_claims(label).any(|claim| {
+                matches!(
+                    claim,
+                    "poor wifi in plenary" | "unreliable wifi in plenary" | "plenary wifi is poor"
+                )
+            }) =>
+        {
             Ok(Quality::Unacceptable)
         }
         "guest wifi" | "fair" => Ok(Quality::Partial),

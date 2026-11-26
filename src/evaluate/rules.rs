@@ -291,6 +291,37 @@ pub(super) fn transport(access: &StationAccess) -> RequirementAssessment {
 }
 
 fn affirmative_public_connection(clause: &str) -> bool {
+    let mut start = 0;
+    for (separator, conjunction) in clause.match_indices(" and ") {
+        let next = separator + conjunction.len();
+        let explicit_subject = clause.get(next..).is_some_and(|tail| {
+            [
+                "guests ",
+                "attendees ",
+                "visitors ",
+                "people ",
+                "there ",
+                "it ",
+            ]
+            .iter()
+            .any(|subject| tail.starts_with(subject))
+        });
+        if explicit_subject {
+            if clause
+                .get(start..separator)
+                .is_some_and(positive_transport_assertion)
+            {
+                return true;
+            }
+            start = next;
+        }
+    }
+    clause
+        .get(start..)
+        .is_some_and(positive_transport_assertion)
+}
+
+fn positive_transport_assertion(clause: &str) -> bool {
     let negated = clause.split_whitespace().any(|word| {
         matches!(word, "no" | "not" | "without" | "cannot" | "never") || word.ends_with("n't")
     });

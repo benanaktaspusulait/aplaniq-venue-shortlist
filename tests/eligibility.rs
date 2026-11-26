@@ -657,6 +657,7 @@ fn fee_vat_exclusions_and_conflicts_keep_the_all_in_cost_unconfirmed() {
         "An additional mandatory AV fee costs €100 not including VAT.",
         "An additional mandatory AV fee costs €100 including VAT, but VAT is excluded.",
         "An additional mandatory AV fee costs €100. VAT treatment is unknown.",
+        "An additional mandatory AV fee costs €100 including VAT. VAT is excluded.",
     ] {
         let mut row = venue("fee-vat");
         row["price"]["amount"] = json!(14900);
@@ -693,6 +694,21 @@ fn a_negated_stop_does_not_establish_public_transport() {
             Eligible,
         ),
         ("There is a bus stop near the venue.", Satisfied, Eligible),
+        (
+            "There is no dedicated parking and guests can come by train.",
+            Satisfied,
+            Eligible,
+        ),
+        (
+            "Guests cannot arrive by bus and by train.",
+            Uncertain,
+            RequiresConfirmation,
+        ),
+        (
+            "A tram stop is not available and visitors can travel by train.",
+            Satisfied,
+            Eligible,
+        ),
         ("Taxi only, no public transport.", Violated, Rejected),
     ] {
         let mut row = venue("transport-claim");
@@ -718,6 +734,30 @@ fn explicit_required_room_restrictions_survive_normalisation() {
             "daylight",
             "The plenary is windowless",
             Criterion::Daylight,
+            Rejected,
+        ),
+        (
+            "daylight",
+            "Mixed daylight elsewhere; the plenary is windowless",
+            Criterion::Daylight,
+            Rejected,
+        ),
+        (
+            "daylight",
+            "Mixed daylight elsewhere; the plenary is not windowless",
+            Criterion::Daylight,
+            RequiresConfirmation,
+        ),
+        (
+            "daylight",
+            "The plenary is dark",
+            Criterion::Daylight,
+            Rejected,
+        ),
+        (
+            "wifi",
+            "4G backup only in the annex; poor WiFi in plenary",
+            Criterion::Wifi,
             Rejected,
         ),
         (

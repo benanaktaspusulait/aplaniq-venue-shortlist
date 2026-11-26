@@ -8,6 +8,7 @@ pub(super) fn from_notes(notes: Option<&str>) -> AdditionalCharges {
     };
     let mut charges = AdditionalCharges::default();
     let mut seen = false;
+    let mut previous_was_fee = false;
     for sentence in notes
         .to_ascii_lowercase()
         .split([';', '\n'])
@@ -15,8 +16,14 @@ pub(super) fn from_notes(notes: Option<&str>) -> AdditionalCharges {
         .flat_map(charge_clauses)
     {
         if !required_charge(sentence) {
+            let clause = sentence.trim_start();
+            if previous_was_fee && clause.starts_with("vat ") && excludes_or_qualifies_vat(clause) {
+                charges.unresolved = true;
+            }
+            previous_was_fee = false;
             continue;
         }
+        previous_was_fee = true;
         let amount = fixed_eur_amount(sentence);
         // Multiple notes can repeat the same charge. Use the largest supported
         // individual minimum until the scope and distinct charges are established.
@@ -33,7 +40,11 @@ pub(super) fn from_notes(notes: Option<&str>) -> AdditionalCharges {
 
 fn includes_vat(clause: &str) -> bool {
     let inclusion = ["vat included", "including vat", "vat is included"];
-    let exclusions_or_qualifiers = [
+    inclusion.iter().any(|term| clause.contains(term)) && !excludes_or_qualifies_vat(clause)
+}
+
+fn excludes_or_qualifies_vat(clause: &str) -> bool {
+    [
         "not including vat",
         "not vat included",
         "vat not included",
@@ -44,11 +55,9 @@ fn includes_vat(clause: &str) -> bool {
         "without vat",
         "plus vat",
         "vat treatment is unknown",
-    ];
-    inclusion.iter().any(|term| clause.contains(term))
-        && !exclusions_or_qualifiers
-            .iter()
-            .any(|term| clause.contains(term))
+    ]
+    .iter()
+    .any(|term| clause.contains(term))
 }
 
 fn charge_clauses(sentence: &str) -> impl Iterator<Item = &str> {
