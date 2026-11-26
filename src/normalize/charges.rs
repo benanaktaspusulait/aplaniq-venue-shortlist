@@ -90,8 +90,9 @@ fn required_charge(sentence: &str) -> bool {
     let cost = ["fee", "charge", "surcharge", "catering", "rental", "cost"]
         .iter()
         .any(|term| sentence.contains(term));
-    let required = sentence.contains("mandatory")
-        || sentence.contains("required")
+    let required = sentence
+        .split(|c: char| !c.is_ascii_alphabetic())
+        .any(|word| matches!(word, "mandatory" | "required" | "compulsory"))
         || sentence.contains("catering not included")
         || sentence.contains("catering is not included");
     cost && required && (!negated_charge(sentence) || sentence.contains(" except "))
@@ -101,8 +102,13 @@ fn negated_charge(sentence: &str) -> bool {
     [
         "no mandatory",
         "no required",
+        "no compulsory",
         "not mandatory",
         "not required",
+        "not compulsory",
+        "non-mandatory",
+        "non-required",
+        "non-compulsory",
         "optional",
     ]
     .iter()

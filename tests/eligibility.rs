@@ -892,3 +892,38 @@ fn a_documented_station_walk_conflicting_with_the_notes_requires_confirmation() 
         assert_eq!(scenario.eligibility, RequiresConfirmation);
     });
 }
+
+#[test]
+fn compulsory_wording_preserves_the_budget_requirement_and_negation() {
+    for (notes, expected, cost) in [
+        (
+            "An additional AV fee is compulsory and costs €300 including VAT.",
+            Rejected,
+            CostEvidence::Complete(MinorUnits::new(1_520_000)),
+        ),
+        (
+            "An additional AV fee is compulsory.",
+            RequiresConfirmation,
+            CostEvidence::Minimum(MinorUnits::new(1_490_000)),
+        ),
+        (
+            "An additional AV fee is not compulsory and costs €300 including VAT.",
+            Eligible,
+            CostEvidence::Complete(MinorUnits::new(1_490_000)),
+        ),
+        (
+            "A non-compulsory additional AV fee costs €300 including VAT.",
+            Eligible,
+            CostEvidence::Complete(MinorUnits::new(1_490_000)),
+        ),
+    ] {
+        let mut row = venue("compulsory");
+        row["price"]["amount"] = json!(14900);
+        row["notes"] = json!(notes);
+        with_rows(&[row], |result| {
+            let primary = &result[0].primary;
+            assert_eq!(primary.eligibility, expected, "{notes}");
+            assert_eq!(primary.listings[0].budget.cost, cost, "{notes}");
+        });
+    }
+}
