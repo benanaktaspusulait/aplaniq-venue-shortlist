@@ -65,4 +65,4 @@ docker run --rm aplaniq-venue-shortlist:local --version
 
 The image runs as UID and GID `65532`. Supply a JSON file readable by that user at the mount path. Both base images are pinned by digest. The runtime contains the release binary and its required libgcc runtime on a Debian 13 distroless base without OpenSSL or a shell. Image and crate downloads can require network access during the build. The run above disables networking.
 
-Run `sh scripts/docker-smoke-test.sh` to rebuild and compare native and container output and verify expected failures. Build and run were verified on `linux/arm64`. See the [packaging record](docs/tasks/TASK-007B-docker-packaging.md#observed-validation) for the image measurement and scan results.
+Run `sh scripts/docker-smoke-test.sh` to rebuild and compare native and container output and verify expected failures. The smoke suite passed on Linux arm64. The Linux amd64 image also ran under emulation and matched native output. See the [current verification](docs/reviews/QA-007-quality-hardening-verification.md#docker-and-security) for measurements and scan results.

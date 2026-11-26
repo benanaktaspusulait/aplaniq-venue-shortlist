@@ -50,3 +50,7 @@ Baseline synthetic release medians with 60, 180 and 360 distinct entries were 6.
 | Q11 | HIGH | [Container](../../Dockerfile), CVE-2026-107494 and CVE-2026-124709 in libssl3t64 | Verify scan and mitigation on a compatible digest. Document residual exposure and runtime controls. |
 
 QA-002 addresses Q05 and Q10. QA-003 addresses Q01–Q04 and Q06. QA-004 addresses Q09. QA-005 addresses Q08 and Q11. QA-006 addresses Q07. QA-007 verifies the complete change with a clean major gate, original export comparison, Docker smoke and a separate review. See the [standards matrix](../engineering/standards-compliance-matrix.md).
+
+## Follow-up
+
+See [QA-007 results](QA-007-quality-hardening-verification.md) for the corrective commits, separate-context review, measured coverage and verified native and Docker outcomes.
