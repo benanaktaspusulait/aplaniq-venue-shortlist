@@ -881,3 +881,14 @@ fn overflow_when_adding_a_mandatory_fee_is_a_budget_rejection() {
         assert!(budget.gaps.contains(&BudgetGap::Overflow));
     });
 }
+
+#[test]
+fn a_documented_station_walk_conflicting_with_the_notes_requires_confirmation() {
+    let mut row = venue("conflicting-transport");
+    row["notes"] = json!("No public transport serves this venue.");
+    with_rows(&[row], |result| {
+        let scenario = &result[0].primary;
+        assert_eq!(rule(scenario, Criterion::Transport).outcome, Uncertain);
+        assert_eq!(scenario.eligibility, RequiresConfirmation);
+    });
+}

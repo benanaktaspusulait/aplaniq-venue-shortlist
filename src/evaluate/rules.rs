@@ -244,14 +244,17 @@ pub(super) fn transport(access: &StationAccess) -> RequirementAssessment {
         .as_deref()
         .unwrap_or_default()
         .to_ascii_lowercase();
-    let no_public_route = [
-        "no public transport",
-        "no public transit",
-        "taxi only",
-        "taxi-only",
-    ]
-    .iter()
-    .any(|claim| detail.contains(claim));
+    let taxi_only = ["taxi only", "taxi-only"]
+        .iter()
+        .any(|claim| detail.contains(claim));
+    let no_public_route = taxi_only
+        || ["no public transport", "no public transit"]
+            .iter()
+            .any(|claim| detail.contains(claim));
+    let taxi_from_station = taxi_only
+        || ["by taxi from station", "by taxi from the station"]
+            .iter()
+            .any(|claim| detail.contains(claim));
     let rail_or_bus = detail
         .split(['.', ';', ',', '\n'])
         .flat_map(|clause| clause.split(" but "))
@@ -266,7 +269,11 @@ pub(super) fn transport(access: &StationAccess) -> RequirementAssessment {
         (Evidence::Known(station), Evidence::Known(_))
             if station.to_ascii_lowercase().starts_with("utrecht ")
     );
-    let (outcome, reason) = if no_public_route && !rail_or_bus && !extra_cost_route {
+    let (outcome, reason) = if no_public_route
+        && !rail_or_bus
+        && !extra_cost_route
+        && (!local_walk || taxi_from_station)
+    {
         (
             Violated,
             "The listing explicitly rules out practical public transport.",
